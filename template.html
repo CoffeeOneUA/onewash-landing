@@ -1,0 +1,1291 @@
+<title>One Wash</title>
+<style>
+  @font-face {
+    font-family: 'Oswald';
+    font-style: normal;
+    font-weight: 200 700;
+    font-display: swap;
+    src: url(data:font/woff2;base64,__OSWALD_B64__) format('woff2');
+  }
+  @font-face {
+    font-family: 'Golos Text';
+    font-style: normal;
+    font-weight: 300 800;
+    font-display: swap;
+    src: url(data:font/woff2;base64,__GOLOS_B64__) format('woff2');
+  }
+
+  :root {
+    --ink: #0b0b0c;
+    --ink-2: #19181b;
+    --ink-3: #242226;
+    --line-dark: rgba(247, 244, 239, 0.14);
+    --paper: #f7f4ef;
+    --paper-2: #ede7de;
+    --line: #ddd5c8;
+    --red: #e2131d;
+    --red-deep: #9e0d14;
+    --red-soft: rgba(226, 19, 29, 0.1);
+    --iron: #6e675f;
+    --smoke: #b6afa6;
+    --text-on-paper: #1b1712;
+    --text-on-ink: #f7f4ef;
+  }
+
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  @media (prefers-reduced-motion: no-preference) {
+    html { scroll-behavior: smooth; }
+  }
+  section[id], main[id] { scroll-margin-top: 88px; }
+
+  .reveal { opacity: 0; transform: translateY(18px); transition: opacity 0.6s ease, transform 0.6s ease; }
+  .reveal.in { opacity: 1; transform: translateY(0); }
+  .adv-card:nth-child(1) { transition-delay: 0ms; }
+  .adv-card:nth-child(2) { transition-delay: 90ms; }
+  .adv-card:nth-child(3) { transition-delay: 180ms; }
+  .review-card:nth-child(1) { transition-delay: 0ms; }
+  .review-card:nth-child(2) { transition-delay: 90ms; }
+  .review-card:nth-child(3) { transition-delay: 180ms; }
+  .gallery-grid figure:nth-child(1) { transition-delay: 0ms; }
+  .gallery-grid figure:nth-child(2) { transition-delay: 90ms; }
+  .gallery-grid figure:nth-child(3) { transition-delay: 180ms; }
+
+  body {
+    margin: 0;
+    background: var(--paper);
+    color: var(--text-on-paper);
+    font-family: 'Golos Text', 'Segoe UI', sans-serif;
+    font-size: 16px;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  img { max-width: 100%; display: block; }
+
+  h1, h2, h3, .display {
+    font-family: 'Oswald', 'Arial Narrow', sans-serif;
+    text-transform: uppercase;
+    font-weight: 600;
+    letter-spacing: 0.01em;
+    line-height: 1.14;
+    text-wrap: balance;
+    margin: 0;
+  }
+
+  a { color: inherit; }
+  a:focus-visible, button:focus-visible, input:focus-visible {
+    outline: 2px solid var(--red);
+    outline-offset: 3px;
+  }
+
+  .eyebrow {
+    font-family: 'Golos Text', sans-serif;
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--red);
+    margin: 0 0 0.9rem;
+  }
+  .eyebrow.on-ink { color: var(--red); }
+
+  .wrap {
+    max-width: 1180px;
+    margin: 0 auto;
+    padding: 0 clamp(20px, 4vw, 48px);
+  }
+
+  .tabular { font-variant-numeric: tabular-nums; }
+
+  /* ---------- Header ---------- */
+  header.site {
+    position: sticky;
+    top: 0;
+    z-index: 40;
+    background: rgba(11, 11, 12, 0.92);
+    backdrop-filter: saturate(140%) blur(10px);
+    border-bottom: 2px solid var(--red);
+  }
+  .header-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+    padding: 12px clamp(20px, 4vw, 48px);
+    max-width: 1180px;
+    margin: 0 auto;
+  }
+  .brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: var(--text-on-ink);
+    text-decoration: none;
+  }
+  .brand img { height: 48px; width: auto; }
+  .brand span {
+    font-family: 'Oswald', sans-serif;
+    font-weight: 600;
+    font-size: 1.05rem;
+    letter-spacing: 0.04em;
+  }
+  nav.main {
+    display: flex;
+    gap: clamp(14px, 2vw, 30px);
+  }
+  nav.main a {
+    color: var(--smoke);
+    text-decoration: none;
+    font-size: 0.82rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    transition: color 0.15s ease;
+    white-space: nowrap;
+  }
+  nav.main a:hover { color: var(--text-on-ink); }
+  .header-actions { display: flex; align-items: center; gap: 12px; }
+  .phone-pill {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--ink-2);
+    border: 1px solid var(--line-dark);
+    color: var(--text-on-ink);
+    text-decoration: none;
+    padding: 8px 14px;
+    border-radius: 999px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    white-space: nowrap;
+  }
+  .phone-pill:hover { border-color: var(--red); }
+  .phone-pill .ico-phone { flex-shrink: 0; }
+  .nav-toggle {
+    display: none;
+    background: none;
+    border: 1px solid var(--line-dark);
+    border-radius: 8px;
+    color: var(--text-on-ink);
+    width: 40px;
+    height: 40px;
+    font-size: 1.1rem;
+    cursor: pointer;
+  }
+
+  @media (max-width: 860px) {
+    nav.main {
+      position: absolute;
+      top: 100%;
+      left: 0;
+      right: 0;
+      flex-direction: column;
+      background: var(--ink);
+      border-bottom: 2px solid var(--red);
+      padding: 18px clamp(20px, 4vw, 48px) 22px;
+      gap: 16px;
+      display: none;
+    }
+    nav.main.open { display: flex; }
+    .nav-toggle { display: block; }
+    .phone-pill span.full { display: none; }
+    .phone-pill {
+      background: var(--red);
+      border-color: var(--red);
+      color: #fff;
+      padding: 0;
+      width: 40px;
+      height: 40px;
+      justify-content: center;
+    }
+    .phone-pill:hover { background: var(--red-deep); border-color: var(--red-deep); }
+  }
+
+  /* ---------- Hero ---------- */
+  .hero {
+    position: relative;
+    background: var(--ink);
+    color: var(--text-on-ink);
+    overflow: hidden;
+    padding: clamp(48px, 8vw, 100px) 0 clamp(40px, 6vw, 76px);
+  }
+  .hero::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(ellipse 60% 50% at 82% 8%, rgba(226,19,29,0.22), transparent 60%),
+      repeating-linear-gradient(115deg, rgba(247,244,239,0.035) 0 2px, transparent 2px 64px);
+    pointer-events: none;
+  }
+  .hero-content { position: relative; max-width: 620px; }
+  .hero h1 {
+    font-size: clamp(2.5rem, 5.2vw + 0.6rem, 4.6rem);
+    color: var(--text-on-ink);
+  }
+  .hero h1 em {
+    font-style: normal;
+    color: var(--red);
+  }
+  .hero-lead {
+    margin: 22px 0 0;
+    max-width: 46ch;
+    color: var(--smoke);
+    font-size: 1.05rem;
+  }
+  .hero-location {
+    margin-top: 18px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px 22px;
+    font-size: 0.92rem;
+    color: var(--smoke);
+  }
+  .hero-location strong { color: var(--text-on-ink); font-weight: 600; }
+  .hero-location a { text-decoration: none; transition: color 0.15s ease; }
+  .hero-location a:hover { color: var(--red); }
+  .hero-location a:hover strong { color: var(--red); }
+  .hero-ctas {
+    margin-top: 34px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 14px;
+  }
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 14px 26px;
+    border-radius: 8px;
+    font-weight: 700;
+    font-size: 0.92rem;
+    text-decoration: none;
+    letter-spacing: 0.01em;
+    border: 1.5px solid transparent;
+    cursor: pointer;
+    transition: transform 0.12s ease, background 0.15s ease, border-color 0.15s ease;
+  }
+  .btn:hover { transform: translateY(-1px); }
+  .btn-primary { background: var(--red); color: #fff; }
+  .btn-primary:hover { background: var(--red-deep); }
+  .btn-ghost-dark { background: transparent; border-color: var(--line-dark); color: var(--text-on-ink); }
+  .btn-ghost-dark:hover { border-color: var(--text-on-ink); }
+  .btn-ghost-light { background: transparent; border-color: var(--line); color: var(--text-on-paper); }
+  .btn-ghost-light:hover { border-color: var(--iron); }
+
+  /* ---------- Section shell ---------- */
+  section { padding: clamp(28px, 5vw, 64px) 0; }
+  .section-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 24px;
+    margin-bottom: clamp(20px, 3vw, 34px);
+  }
+  .section-head h2 { font-size: clamp(1.9rem, 3vw, 2.6rem); }
+  .section-lead { margin: 0; color: var(--iron); max-width: 46ch; padding-top: 4px; }
+  .on-ink .section-lead { color: var(--smoke); }
+
+  /* ---------- Advantages ---------- */
+  .adv-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1px;
+    background: var(--line);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    overflow: hidden;
+  }
+  @media (max-width: 760px) { .adv-grid { grid-template-columns: 1fr; } }
+  .adv-card {
+    background: var(--paper);
+    padding: 30px 28px;
+  }
+  .adv-num {
+    font-family: 'Oswald', sans-serif;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--red);
+    letter-spacing: 0.1em;
+  }
+  .adv-card h3 { font-size: 1.3rem; margin: 14px 0 10px; }
+  .adv-card p { margin: 0; color: var(--iron); font-size: 0.95rem; }
+
+  .perk-strip {
+    margin-top: 1px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    background: var(--ink);
+    color: var(--text-on-ink);
+    border-radius: 14px;
+    padding: 20px 28px;
+    margin-top: 22px;
+    font-size: 0.95rem;
+  }
+  .perk-strip .tag {
+    background: var(--red);
+    color: #fff;
+    font-family: 'Oswald', sans-serif;
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 5px 10px;
+    border-radius: 5px;
+    flex-shrink: 0;
+  }
+
+  /* ---------- Prices ---------- */
+  .price-scroll { overflow-x: auto; border-radius: 14px; border: 1px solid var(--line); }
+  table.price-table {
+    width: 100%;
+    border-collapse: collapse;
+    min-width: 760px;
+    background: var(--paper);
+  }
+  table.price-table th, table.price-table td {
+    padding: 16px 18px;
+    text-align: left;
+    border-bottom: 1px solid var(--line);
+    font-size: 0.92rem;
+  }
+  table.price-table thead th {
+    font-family: 'Oswald', sans-serif;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    font-size: 0.74rem;
+    color: var(--iron);
+    background: var(--paper-2);
+    font-weight: 600;
+  }
+  table.price-table tbody tr:last-child td { border-bottom: none; }
+  table.price-table tbody tr:hover { background: var(--red-soft); }
+  .svc-name { font-weight: 700; font-family: 'Oswald', sans-serif; letter-spacing: 0.01em; font-size: 1rem; }
+  .svc-desc { display: block; font-weight: 400; font-family: 'Golos Text', sans-serif; color: var(--iron); font-size: 0.82rem; margin-top: 3px; }
+  .price-cell { font-weight: 700; white-space: nowrap; }
+  .price-cell .from { font-weight: 400; color: var(--iron); font-size: 0.78rem; }
+
+  /* ---------- Extra services (ink) ---------- */
+  .extras { background: var(--ink); color: var(--text-on-ink); }
+  .extras .section-head h2 { color: var(--text-on-ink); }
+  .extra-grid2 {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0 40px;
+  }
+  @media (max-width: 760px) { .extra-grid2 { grid-template-columns: 1fr; } }
+  .extra-cat { margin-bottom: 20px; }
+  .extra-cat-name {
+    font-family: 'Oswald', sans-serif;
+    font-size: 0.98rem;
+    letter-spacing: 0.01em;
+    padding-bottom: 7px;
+    border-bottom: 1px solid var(--line-dark);
+  }
+  .extra-variant {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 7px 0 0;
+    font-size: 0.85rem;
+    color: var(--smoke);
+  }
+  .extra-variant .price { color: var(--red); font-weight: 700; font-family: 'Oswald', sans-serif; white-space: nowrap; }
+  .extra-flat {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    padding: 12px 0;
+    border-bottom: 1px solid var(--line-dark);
+    font-size: 0.95rem;
+    margin-bottom: 18px;
+  }
+  .extra-flat .price { color: var(--red); font-weight: 700; font-family: 'Oswald', sans-serif; }
+
+  /* ---------- Booking calculator ---------- */
+  .booking-grid {
+    display: grid;
+    grid-template-columns: 1.2fr 0.8fr;
+    gap: clamp(28px, 4vw, 48px);
+    align-items: start;
+  }
+  @media (max-width: 900px) { .booking-grid { grid-template-columns: 1fr; } }
+  .b-block { margin-bottom: 30px; }
+  .b-label {
+    font-family: 'Oswald', sans-serif;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    font-size: 0.78rem;
+    color: var(--iron);
+    margin-bottom: 12px;
+    display: block;
+  }
+  .b-options { display: flex; flex-wrap: wrap; gap: 10px; }
+  .b-opt {
+    border: 1.5px solid var(--line);
+    background: var(--card, #fff);
+    border-radius: 12px;
+    padding: 11px 16px;
+    font-size: 0.86rem;
+    font-weight: 600;
+    font-family: 'Golos Text', sans-serif;
+    cursor: pointer;
+    color: var(--text-on-paper);
+    transition: border-color 0.15s ease, background 0.15s ease, color 0.15s ease;
+    text-align: left;
+  }
+  .b-opt:hover { border-color: var(--iron); }
+  .b-opt.sel { border-color: var(--red); background: var(--red); color: #fff; }
+  .b-opt small { display: block; font-weight: 400; opacity: 0.85; font-size: 0.78rem; margin-top: 2px; }
+  .b-note { font-size: 0.8rem; color: var(--iron); margin-top: 10px; }
+
+  .b-extras { display: grid; grid-template-columns: repeat(2, 1fr); gap: 4px 20px; }
+  @media (max-width: 560px) { .b-extras { grid-template-columns: 1fr; } }
+  .b-extra-check {
+    display: flex; align-items: flex-start; gap: 10px; padding: 9px 0;
+    border-bottom: 1px solid var(--line); cursor: pointer; font-size: 0.86rem;
+  }
+  .b-extra-check input { margin-top: 3px; accent-color: var(--red); width: 16px; height: 16px; flex-shrink: 0; }
+  .b-extra-check .price { margin-left: auto; font-weight: 700; color: var(--red); font-family: 'Oswald', sans-serif; white-space: nowrap; }
+
+  .summary-card {
+    position: sticky; top: 100px; background: var(--ink); color: var(--text-on-ink);
+    border-radius: 16px; padding: 26px;
+  }
+  .summary-row { display: flex; justify-content: space-between; gap: 10px; padding: 10px 0; border-bottom: 1px solid var(--line-dark); font-size: 0.88rem; }
+  .summary-row:last-of-type { border-bottom: none; }
+  .summary-row .k { color: var(--smoke); }
+  .summary-row .v { font-weight: 600; text-align: right; }
+  .summary-total { display: flex; justify-content: space-between; align-items: baseline; margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--line-dark); }
+  .summary-total .amt { font-family: 'Oswald', sans-serif; font-size: 1.8rem; color: var(--red); }
+  .pay-toggle { display: flex; gap: 8px; margin-top: 16px; }
+  .pay-opt {
+    flex: 1; border: 1.5px solid var(--line-dark); border-radius: 10px; padding: 10px 6px;
+    text-align: center; font-size: 0.78rem; font-weight: 700; cursor: pointer; background: transparent; color: var(--text-on-ink);
+    font-family: 'Golos Text', sans-serif;
+  }
+  .pay-opt.sel { border-color: var(--red); background: var(--red); color: #fff; }
+  .send-btn { width: 100%; justify-content: center; margin-top: 18px; border: none; }
+  .copy-box { margin-top: 16px; display: none; }
+  .copy-box.show { display: block; }
+  .copy-box textarea {
+    width: 100%; min-height: 130px; resize: vertical; background: var(--ink-2); border: 1px solid var(--line-dark);
+    color: var(--text-on-ink); border-radius: 10px; padding: 10px; font-size: 0.78rem; font-family: 'Golos Text', sans-serif;
+  }
+  .copy-actions { display: flex; gap: 8px; margin-top: 10px; flex-wrap: wrap; }
+  .copy-actions .btn { padding: 9px 14px; font-size: 0.78rem; }
+  .b-disclaimer { font-size: 0.76rem; color: var(--smoke); margin-top: 16px; line-height: 1.5; }
+  .copy-toast { font-size: 0.78rem; color: var(--red); margin-top: 8px; display: none; }
+  .copy-toast.show { display: block; }
+
+  /* ---------- Gallery ---------- */
+  .gallery-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 18px;
+  }
+  @media (max-width: 760px) { .gallery-grid { grid-template-columns: 1fr; } }
+  .gallery-grid figure {
+    margin: 0;
+    border-radius: 14px;
+    overflow: hidden;
+    border: 1px solid var(--line);
+    background: var(--ink);
+    aspect-ratio: 4 / 5;
+  }
+  .gallery-grid img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+
+  /* ---------- Reviews ---------- */
+  .review-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 22px;
+  }
+  @media (max-width: 900px) { .review-grid { grid-template-columns: 1fr; } }
+  .review-card {
+    background: var(--paper);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    padding: 26px 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+  .review-quote {
+    font-size: 1rem;
+    line-height: 1.55;
+    margin: 0;
+  }
+  .review-quote::before { content: "\201C"; color: var(--red); font-family: 'Oswald', sans-serif; }
+  .review-meta { display: flex; justify-content: space-between; align-items: baseline; font-size: 0.82rem; color: var(--iron); border-top: 1px solid var(--line); padding-top: 14px; }
+  .review-meta strong { color: var(--text-on-paper); font-weight: 700; }
+
+  /* ---------- Contact / map ---------- */
+  .contact { background: var(--ink); color: var(--text-on-ink); }
+  .contact .section-head h2 { color: var(--text-on-ink); }
+  .contact-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: clamp(30px, 5vw, 60px);
+    align-items: center;
+  }
+  @media (max-width: 860px) { .contact-grid { grid-template-columns: 1fr; } }
+  .contact-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 18px; }
+  .contact-list li { display: flex; gap: 16px; align-items: flex-start; border-bottom: 1px solid var(--line-dark); padding-bottom: 18px; }
+  .contact-list li:last-child { border-bottom: none; padding-bottom: 0; }
+  .contact-list .ico {
+    width: 38px; height: 38px; border-radius: 9px; background: var(--ink-2); border: 1px solid var(--line-dark);
+    display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 1.05rem;
+  }
+  .contact-list a { text-decoration: none; }
+  .contact-list .label { font-size: 0.76rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--smoke); margin-bottom: 3px; }
+  .contact-list .val { font-size: 1.05rem; font-weight: 600; }
+  .contact-list .val:hover { color: var(--red); }
+
+  .map-card {
+    position: relative;
+    border: 1px solid var(--line-dark);
+    border-radius: 16px;
+    background: var(--ink-2);
+    padding: 30px;
+    text-align: center;
+    overflow: hidden;
+  }
+  .map-card svg { width: 100%; max-width: 220px; margin: 0 auto 18px; }
+  .map-card .addr { font-family: 'Oswald', sans-serif; font-size: 1.15rem; text-transform: uppercase; }
+  .map-card .coord { font-size: 0.78rem; color: var(--smoke); margin-top: 6px; }
+  .map-ring { stroke: var(--red); }
+
+  /* ---------- Footer ---------- */
+  footer {
+    background: #08080a;
+    color: var(--smoke);
+    padding: 40px 0 30px;
+    font-size: 0.85rem;
+    border-top: 1px solid var(--line-dark);
+  }
+  .foot-row {
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 18px;
+    align-items: center;
+  }
+  .foot-brand { display: flex; align-items: center; gap: 10px; }
+  .foot-brand img { height: 34px; }
+  .foot-nav { display: flex; gap: 20px; flex-wrap: wrap; }
+  .foot-nav a { text-decoration: none; color: var(--smoke); }
+  .foot-nav a:hover { color: var(--text-on-ink); }
+  .foot-bottom { margin-top: 26px; padding-top: 20px; border-top: 1px solid var(--line-dark); display: flex; justify-content: space-between; flex-wrap: wrap; gap: 10px; font-size: 0.78rem; }
+
+  @media (prefers-reduced-motion: reduce) {
+    * { transition: none !important; animation: none !important; }
+  }
+</style>
+
+<header class="site">
+  <div class="header-row">
+    <a class="brand" href="#top">
+      <img src="data:image/png;base64,__LOGO_B64__" alt="One Wash" />
+    </a>
+    <nav class="main" id="mainNav">
+      <a href="#booking">Запис</a>
+      <a href="#prices">Прайс</a>
+      <a href="#gallery">Авто</a>
+      <a href="#reviews">Відгуки</a>
+      <a href="#map">Мапа проїзду</a>
+    </nav>
+    <div class="header-actions">
+      <a class="phone-pill" href="tel:+380683077878" aria-label="Зателефонувати +38 (068) 307-78-78">
+        <svg class="ico-phone" width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path d="M6.6 10.8c1.4 2.8 3.8 5.1 6.6 6.6l2.2-2.2c.3-.3.7-.4 1.1-.3 1.2.4 2.5.6 3.8.6.6 0 1 .4 1 1V20c0 .6-.4 1-1 1C10.6 21 3 13.4 3 4c0-.6.4-1 1-1h3.5c.6 0 1 .4 1 1 0 1.3.2 2.6.6 3.8.1.4 0 .8-.3 1.1L6.6 10.8Z" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <span class="full">+38 (068) 307-78-78</span>
+      </a>
+      <button class="nav-toggle" id="navToggle" aria-label="Меню" aria-expanded="false">☰</button>
+    </div>
+  </div>
+</header>
+
+<main id="top">
+  <section class="hero">
+    <div class="wrap">
+      <div class="hero-content">
+        <p class="eyebrow on-ink">Автомийка-хімчистка в Тернополі</p>
+        <h1>Чистота вашого<br />авто <em>від 300 грн</em></h1>
+        <p class="hero-lead">One Wash — мийка, хімчистка та затишна кав'ярня в одному місці. Повний спектр послуг: від експрес-мийки до повної хімчистки салону.</p>
+        <div class="hero-location">
+          <a href="https://www.google.com/maps?q=49.5396139,25.6329717" target="_blank" rel="noopener">📍 <strong>вул. Протасевича 11А</strong>, Тернопіль</a>
+          <a href="tel:+380683077878">📞 <strong>+38 (068) 307-78-78</strong></a>
+        </div>
+        <div class="hero-ctas">
+          <a class="btn btn-primary" href="#booking">Записатись онлайн</a>
+          <a class="btn btn-ghost-dark" href="tel:+380683077878">Зателефонувати</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="zapys">
+    <div class="wrap">
+      <div class="section-head">
+        <div>
+          <p class="eyebrow">Не просто автомийка</p>
+          <h2>Повний спектр послуг за один візит</h2>
+        </div>
+        <p class="section-lead">Мийка, хімчистка і кава — щоб час, поки авто готують, минав з користю.</p>
+      </div>
+
+      <div class="adv-grid">
+        <div class="adv-card reveal">
+          <span class="adv-num">01</span>
+          <h3>Повний спектр послуг мийки</h3>
+          <p>Експрес-мийка, стандартна мийка, преміальні послуги, повна хімчистка та інше.</p>
+        </div>
+        <div class="adv-card reveal">
+          <span class="adv-num">02</span>
+          <h3>Бонусна система</h3>
+          <p>10% знижки на першу мийку для нових клієнтів.</p>
+        </div>
+        <div class="adv-card reveal">
+          <span class="adv-num">03</span>
+          <h3>Зручна кав'ярня</h3>
+          <p>Чекайте на своє авто з кавою, а не в черзі.</p>
+        </div>
+      </div>
+
+      <div class="perk-strip">
+        <span class="tag">Безкоштовно</span>
+        <span>Трансфер авто — доставка від дому на хімчистку і назад.</span>
+      </div>
+
+      <div style="margin-top:34px; display:flex; gap:14px; flex-wrap:wrap;">
+        <a class="btn btn-primary" href="#booking">Записатись онлайн</a>
+        <a class="btn btn-ghost-light" href="tel:+380683077878">Зателефонувати</a>
+      </div>
+    </div>
+  </section>
+
+  <section id="prices" style="background:var(--paper-2);">
+    <div class="wrap">
+      <div class="section-head">
+        <div>
+          <p class="eyebrow">Прайс</p>
+          <h2>Пакети мийки</h2>
+        </div>
+        <p class="section-lead">Ціна залежить від типу пакету та категорії авто.</p>
+      </div>
+
+      <div class="price-scroll">
+        <table class="price-table">
+          <thead>
+            <tr>
+              <th>Пакет</th>
+              <th>Легковий (міні)</th>
+              <th>Легковий (звич.)</th>
+              <th>Позашляховик</th>
+              <th>Кросовер/мінівен</th>
+              <th>Бус</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><span class="svc-name">Експрес</span><span class="svc-desc">Безконтактна мийка, очищення килимків</span></td>
+              <td class="price-cell tabular">400 грн</td>
+              <td class="price-cell tabular">450 грн</td>
+              <td class="price-cell tabular">500 грн</td>
+              <td class="price-cell tabular">500 грн</td>
+              <td class="price-cell tabular">575 грн</td>
+            </tr>
+            <tr>
+              <td><span class="svc-name">Стандарт</span><span class="svc-desc">Мийка, килимки, пилосмок, вологе прибирання, скло, чорніння гуми</span></td>
+              <td class="price-cell tabular">650 грн</td>
+              <td class="price-cell tabular">700 грн</td>
+              <td class="price-cell tabular">750 грн</td>
+              <td class="price-cell tabular">750 грн</td>
+              <td class="price-cell tabular">800 грн</td>
+            </tr>
+            <tr>
+              <td><span class="svc-name">Преміум</span><span class="svc-desc">Розширена мийка + диски, рідкий віск, поліроль</span></td>
+              <td class="price-cell tabular">800 грн</td>
+              <td class="price-cell tabular">900 грн</td>
+              <td class="price-cell tabular">1000 грн</td>
+              <td class="price-cell tabular">1000 грн</td>
+              <td class="price-cell tabular">1150 грн</td>
+            </tr>
+            <tr>
+              <td><span class="svc-name">Хімчистка</span><span class="svc-desc">Комплексна хімчистка салону</span></td>
+              <td class="price-cell tabular">5000 грн</td>
+              <td class="price-cell tabular">6000 грн</td>
+              <td class="price-cell tabular">8000 грн</td>
+              <td class="price-cell tabular">8000 грн</td>
+              <td class="price-cell tabular">10 000 грн</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <section class="extras">
+    <div class="wrap">
+      <div class="section-head">
+        <div>
+          <p class="eyebrow on-ink">Додаткові послуги</p>
+          <h2>Точковий догляд за авто</h2>
+        </div>
+      </div>
+
+      <div class="extra-grid2" id="extrasGrid"></div>
+    </div>
+  </section>
+
+  <section id="booking" style="background:var(--paper-2);">
+    <div class="wrap">
+      <div class="section-head">
+        <div>
+          <p class="eyebrow">Запис</p>
+          <h2>Записатись онлайн</h2>
+        </div>
+        <p class="section-lead">Оберіть авто, пакет і додаткові послуги — сума порахується одразу з реального прайсу One Wash.</p>
+      </div>
+
+      <div class="booking-grid">
+        <div>
+          <div class="b-block">
+            <span class="b-label">1. Тип авто</span>
+            <div class="b-options" id="bVehicle"></div>
+            <p class="b-note" id="bVehicleNote"></p>
+          </div>
+
+          <div class="b-block">
+            <span class="b-label">2. Пакет мийки</span>
+            <div class="b-options" id="bPackage"></div>
+          </div>
+
+          <div class="b-block">
+            <span class="b-label">3. Додаткові послуги (необов'язково)</span>
+            <div class="b-extras" id="bExtras"></div>
+          </div>
+        </div>
+
+        <div class="summary-card reveal">
+          <div class="display" style="font-size:1.05rem;">Ваш запис</div>
+          <div class="summary-row"><span class="k">Авто</span><span class="v" id="sVehicle">—</span></div>
+          <div class="summary-row"><span class="k">Пакет</span><span class="v" id="sPackage">—</span></div>
+          <div class="summary-row"><span class="k">Додатково</span><span class="v" id="sExtras">—</span></div>
+          <div class="summary-row"><span class="k">Орієнтовний час</span><span class="v" id="sDuration">—</span></div>
+
+          <div class="summary-total">
+            <span>До сплати</span>
+            <span class="amt tabular" id="sTotal">0 грн</span>
+          </div>
+          <div class="pay-toggle">
+            <button type="button" class="pay-opt sel" id="payFull">Повна сума</button>
+            <button type="button" class="pay-opt" id="payDeposit">Передоплата 200 грн</button>
+          </div>
+
+          <button type="button" class="btn btn-primary send-btn" id="sendBtn">Надіслати запит</button>
+
+          <div class="copy-box" id="copyBox">
+            <textarea id="copyText" readonly></textarea>
+            <div class="copy-actions">
+              <button type="button" class="btn btn-ghost-dark" id="copyBtn">Копіювати деталі</button>
+              <a class="btn btn-ghost-dark" id="smsLink" href="#">SMS адміністратору</a>
+              <a class="btn btn-ghost-dark" href="tel:+380683077878">Подзвонити</a>
+            </div>
+            <p class="copy-toast" id="copyToast">Скопійовано — вставте в Instagram-повідомлення або SMS.</p>
+          </div>
+
+          <p class="b-disclaimer">Онлайн-оплата карткою на сайті поки не підключена. Після натискання «Надіслати запит» деталі запису формуються тут же — зателефонуйте, напишіть у SMS чи Instagram, і адміністратор підтвердить час та оформить оплату (WayForPay або на місці).</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="gallery">
+    <div class="wrap">
+      <div class="section-head">
+        <div>
+          <p class="eyebrow">Портфоліо</p>
+          <h2>Авто на нашій мийці</h2>
+        </div>
+        <p class="section-lead">У нас обслуговуються тільки найкращі автівки, бо ми надаємо преміальний сервіс та якість.</p>
+      </div>
+
+      <div class="gallery-grid">
+        <figure class="reveal">
+          <img src="data:image/jpeg;base64,__CAR1_B64__" alt="Ford Mustang на мийці One Wash" loading="lazy" />
+        </figure>
+        <figure class="reveal">
+          <img src="data:image/jpeg;base64,__CAR2_B64__" alt="Tesla Model 3 на мийці One Wash" loading="lazy" />
+        </figure>
+        <figure class="reveal">
+          <img src="data:image/jpeg;base64,__CAR3_B64__" alt="Porsche Taycan на мийці One Wash" loading="lazy" />
+        </figure>
+      </div>
+    </div>
+  </section>
+
+  <section id="reviews" style="background:var(--paper-2);">
+    <div class="wrap">
+      <div class="section-head">
+        <div>
+          <p class="eyebrow">Відгуки</p>
+          <h2>Що кажуть клієнти</h2>
+        </div>
+      </div>
+
+      <div class="review-grid">
+        <div class="review-card reveal">
+          <p class="review-quote">Дуже задоволена візитом до вас. Все зробили чудово. І дуже великий плюс в тому, що ви працювали 31 грудня.</p>
+          <div class="review-meta"><strong>Oksana Turko</strong><span>5,1 тис. в Instagram</span></div>
+        </div>
+        <div class="review-card reveal">
+          <p class="review-quote">За 600 гривень та зовсім небагато часу я отримав просто високоякісний сервіс та дуже дбале ставлення до авто.</p>
+          <div class="review-meta"><strong>Турко Андрій</strong><span>19,6 тис. в Instagram</span></div>
+        </div>
+        <div class="review-card reveal">
+          <p class="review-quote">Для мене головне, що все вчасно і пунктуально, а також професійно.</p>
+          <div class="review-meta"><strong>Anna Gnatyshyn</strong><span>109 тис. в Instagram</span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="contact" id="map">
+    <div class="wrap">
+      <div class="section-head">
+        <div>
+          <p class="eyebrow on-ink">Мапа проїзду</p>
+          <h2>Де нас знайти</h2>
+        </div>
+      </div>
+
+      <div class="contact-grid">
+        <ul class="contact-list">
+          <li>
+            <span class="ico">📍</span>
+            <div>
+              <div class="label">Адреса</div>
+              <a class="val" href="https://www.google.com/maps?q=49.5396139,25.6329717" target="_blank" rel="noopener">вул. Протасевича 11А, Тернопіль</a>
+            </div>
+          </li>
+          <li>
+            <span class="ico">📞</span>
+            <div>
+              <div class="label">Телефон</div>
+              <a class="val" href="tel:+380683077878">+38 (068) 307-78-78</a>
+            </div>
+          </li>
+          <li>
+            <span class="ico">📷</span>
+            <div>
+              <div class="label">Instagram</div>
+              <a class="val" href="https://instagram.com/onewash_ternopil" target="_blank" rel="noopener">@onewash_ternopil</a>
+            </div>
+          </li>
+          <li>
+            <span class="ico">🎵</span>
+            <div>
+              <div class="label">TikTok</div>
+              <a class="val" href="https://tiktok.com/@onewash_ternopil" target="_blank" rel="noopener">@onewash_ternopil</a>
+            </div>
+          </li>
+        </ul>
+
+        <div class="map-card">
+          <svg viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+            <circle class="map-ring" cx="100" cy="100" r="90" stroke-width="1" opacity="0.25"/>
+            <circle class="map-ring" cx="100" cy="100" r="62" stroke-width="1" opacity="0.4"/>
+            <circle class="map-ring" cx="100" cy="100" r="34" stroke-width="1" opacity="0.6"/>
+            <path d="M100 55c-16.6 0-30 13.4-30 30 0 22.5 30 60 30 60s30-37.5 30-60c0-16.6-13.4-30-30-30z" fill="#e2131d"/>
+            <circle cx="100" cy="85" r="11" fill="#0b0b0c"/>
+          </svg>
+          <div class="addr">вул. Протасевича 11А</div>
+          <div class="coord tabular">49.5396, 25.6330 · Тернопіль</div>
+          <div style="margin-top:20px;">
+            <a class="btn btn-primary" href="https://www.google.com/maps?q=49.5396139,25.6329717" target="_blank" rel="noopener">Прокласти маршрут</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <div class="foot-row">
+      <div class="foot-brand">
+        <img src="data:image/png;base64,__LOGO_B64__" alt="One Wash" />
+      </div>
+      <nav class="foot-nav">
+        <a href="#booking">Запис</a>
+        <a href="#prices">Прайс</a>
+        <a href="#gallery">Авто</a>
+        <a href="#reviews">Відгуки</a>
+        <a href="#map">Мапа проїзду</a>
+      </nav>
+      <a class="btn btn-ghost-dark" href="tel:+380683077878">+38 (068) 307-78-78</a>
+    </div>
+    <div class="foot-bottom">
+      <span>© 2026 One Wash, Тернопіль</span>
+      <span>вул. Протасевича 11А · @onewash_ternopil</span>
+    </div>
+  </div>
+</footer>
+
+<script>
+(function () {
+  'use strict';
+
+  /* ---------- Nav ---------- */
+  var toggle = document.getElementById('navToggle');
+  var nav = document.getElementById('mainNav');
+  toggle.addEventListener('click', function () {
+    var open = nav.classList.toggle('open');
+    toggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+  });
+  Array.prototype.forEach.call(nav.querySelectorAll('a'), function (a) {
+    a.addEventListener('click', function () {
+      nav.classList.remove('open');
+      toggle.setAttribute('aria-expanded', 'false');
+    });
+  });
+
+  /* ---------- Scroll-reveal ---------- */
+  var revealEls = document.querySelectorAll('.reveal');
+  if ('IntersectionObserver' in window) {
+    var io = new IntersectionObserver(function (entries) {
+      entries.forEach(function (en) {
+        if (en.isIntersecting) {
+          en.target.classList.add('in');
+          io.unobserve(en.target);
+        }
+      });
+    }, { threshold: 0.15 });
+    Array.prototype.forEach.call(revealEls, function (el) { io.observe(el); });
+  } else {
+    Array.prototype.forEach.call(revealEls, function (el) { el.classList.add('in'); });
+  }
+
+  /* ---------- Real data from the One Wash Supabase database ---------- */
+  /* extra_services: is_active = true, fetched from the live booking database */
+  var EXTRAS = [
+    { name: 'Антидощ (бус)', price: 450, duration: 45 },
+    { name: 'Антидощ (кросовер/мінівен)', price: 400, duration: 45 },
+    { name: 'Антидощ (легковий звичайний)', price: 300, duration: 45 },
+    { name: 'Антидощ (легковий міні)', price: 250, duration: 45 },
+    { name: 'Видалення слідів від комах (інші категорії)', price: 450, duration: 5 },
+    { name: 'Видалення слідів від комах (легковий звичайний)', price: 400, duration: 5 },
+    { name: 'Видалення слідів від комах (легковий міні)', price: 350, duration: 5 },
+    { name: 'Експрес салону (бус)', price: 575, duration: 60 },
+    { name: 'Експрес салону (кросовер/мінівен)', price: 500, duration: 60 },
+    { name: 'Експрес салону (легковий звичайний)', price: 450, duration: 60 },
+    { name: 'Експрес салону (легковий міні)', price: 400, duration: 60 },
+    { name: 'Зняття бітуму (бус)', price: 900, duration: 60 },
+    { name: 'Зняття бітуму (кросовер/мінівен)', price: 750, duration: 60 },
+    { name: 'Зняття бітуму (легковий звичайний)', price: 650, duration: 60 },
+    { name: 'Зняття бітуму (легковий міні)', price: 550, duration: 60 },
+    { name: 'Кондиціонер шкіри (кросовер/бус/мінівен)', price: 450, duration: 30 },
+    { name: 'Кондиціонер шкіри (легковий звичайний)', price: 400, duration: 30 },
+    { name: 'Кондиціонер шкіри (легковий міні)', price: 350, duration: 30 },
+    { name: 'Локальне видалення плям', price: 200, duration: 30 },
+    { name: 'Озонування', price: 500, duration: 30 },
+    { name: 'Очищення вікон (бус)', price: 300, duration: 20 },
+    { name: 'Очищення вікон (кросовер/мінівен)', price: 250, duration: 20 },
+    { name: 'Очищення вікон (легковий звичайний)', price: 200, duration: 20 },
+    { name: 'Очищення вікон (легковий міні)', price: 150, duration: 20 },
+    { name: 'Полірування ЛФП', price: 5000, duration: 1080 },
+    { name: 'Полірування фар', price: 1000, duration: 90 },
+    { name: 'Рідкий віск (бус)', price: 400, duration: 5 },
+    { name: 'Рідкий віск (кросовер/мінівен)', price: 250, duration: 5 },
+    { name: 'Рідкий віск (легковий звичайний)', price: 200, duration: 5 },
+    { name: 'Рідкий віск (легковий міні)', price: 150, duration: 5 },
+    { name: 'Твердий віск (бус)', price: 950, duration: 60 },
+    { name: 'Твердий віск (кросовер/мінівен)', price: 800, duration: 60 },
+    { name: 'Твердий віск (легковий звичайний)', price: 650, duration: 60 },
+    { name: 'Твердий віск (легковий міні)', price: 550, duration: 60 },
+    { name: 'Хімчистка багажника (бус)', price: 650, duration: 90 },
+    { name: 'Хімчистка багажника (кросовер/мінівен)', price: 600, duration: 90 },
+    { name: 'Хімчистка багажника (легковий звичайний)', price: 500, duration: 90 },
+    { name: 'Хімчистка багажника (легковий міні)', price: 400, duration: 90 },
+    { name: 'Хімчистка дверної карти (бус)', price: 350, duration: 30 },
+    { name: 'Хімчистка дверної карти (кросовер/мінівен)', price: 300, duration: 30 },
+    { name: 'Хімчистка дверної карти (легковий звичайний)', price: 250, duration: 30 },
+    { name: 'Хімчистка дверної карти (легковий міні)', price: 200, duration: 30 },
+    { name: 'Хімчистка сидіння заднього (кросовер/мінівен/бус)', price: 750, duration: 180 },
+    { name: 'Хімчистка сидіння заднього (легковий звичайний)', price: 650, duration: 180 },
+    { name: 'Хімчистка сидіння заднього (легковий міні)', price: 550, duration: 180 },
+    { name: 'Хімчистка сидіння переднього (кросовер/мінівен/бус)', price: 550, duration: 120 },
+    { name: 'Хімчистка сидіння переднього (легковий звичайний)', price: 500, duration: 120 },
+    { name: 'Хімчистка сидіння переднього (легковий міні)', price: 400, duration: 120 },
+    { name: 'Хімчистка стелі (бус)', price: 1000, duration: 90 },
+    { name: 'Хімчистка стелі (кросовер/мінівен)', price: 900, duration: 90 },
+    { name: 'Хімчистка стелі (легковий звичайний)', price: 800, duration: 90 },
+    { name: 'Хімчистка стелі (легковий міні)', price: 600, duration: 90 }
+  ];
+
+  function parseExtra(name) {
+    var m = name.match(/^(.*?)\s*\(([^)]+)\)\s*$/);
+    if (!m) return { base: name.trim(), raw: null, tokens: null };
+    var raw = m[2].trim();
+    return { base: m[1].trim(), raw: raw, tokens: raw.split('/').map(function (s) { return s.trim().toLowerCase(); }) };
+  }
+
+  var PARSED_EXTRAS = EXTRAS.map(function (e) {
+    var p = parseExtra(e.name);
+    return { base: p.base, raw: p.raw, tokens: p.tokens, price: e.price, duration: e.duration };
+  });
+
+  /* vehicle_types, straight from the location's real category list */
+  var VEHICLES = [
+    { key: 'mini', label: 'Легковий (міні)', kw: ['легковий міні'] },
+    { key: 'regular', label: 'Легковий (звичайний)', kw: ['легковий звичайний'] },
+    { key: 'suv', label: 'Позашляховик', kw: ['легковий звичайний'], extrasApprox: true },
+    { key: 'crossover', label: 'Кросовер / мінівен', kw: ['кросовер', 'мінівен'] },
+    { key: 'bus', label: 'Бус (мікроавтобус)', kw: ['бус'] }
+  ];
+
+  /* wash_types x vehicle_types, exact prices from the wash_prices table (public.wash_prices) */
+  var PACKAGES = [
+    { key: 'express', name: 'Експрес', desc: 'Безконтактна мийка, очищення килимків', duration: 60,
+      price: { mini: 400, regular: 450, suv: 500, crossover: 500, bus: 575 } },
+    { key: 'standard', name: 'Стандарт', desc: 'Мийка, килимки, пилосмок, вологе прибирання, скло, чорніння гуми', duration: 90,
+      price: { mini: 650, regular: 700, suv: 750, crossover: 750, bus: 800 } },
+    { key: 'premium', name: 'Преміум', desc: 'Розширена мийка + диски, рідкий віск, поліроль', duration: 120,
+      price: { mini: 800, regular: 900, suv: 1000, crossover: 1000, bus: 1150 } },
+    { key: 'chem', name: 'Хімчистка', desc: 'Комплексна хімчистка салону', duration: 540,
+      price: { mini: 5000, regular: 6000, suv: 8000, crossover: 8000, bus: 10000 } }
+  ];
+
+  /* ---------- Render: full extras section from real DB data ---------- */
+  function buildGroups(list) {
+    var groups = [];
+    list.forEach(function (e) {
+      var g = groups[groups.length - 1];
+      if (g && g.base === e.base) {
+        g.items.push(e);
+      } else {
+        groups.push({ base: e.base, items: [e] });
+      }
+    });
+    return groups;
+  }
+
+  function renderGroup(g) {
+    if (g.items.length === 1 && g.items[0].tokens === null) {
+      return '<div class="extra-flat"><span>' + g.base + '</span><span class="price tabular">' + g.items[0].price + ' грн</span></div>';
+    }
+    var html = '<div class="extra-cat reveal"><div class="extra-cat-name">' + g.base + '</div>';
+    g.items.forEach(function (it) {
+      html += '<div class="extra-variant"><span>' + it.raw + '</span><span class="price tabular">' + it.price + ' грн</span></div>';
+    });
+    html += '</div>';
+    return html;
+  }
+
+  var extrasGrid = document.getElementById('extrasGrid');
+  if (extrasGrid) {
+    var groups = buildGroups(PARSED_EXTRAS);
+    var half = Math.ceil(groups.length / 2);
+    var col1 = groups.slice(0, half).map(renderGroup).join('');
+    var col2 = groups.slice(half).map(renderGroup).join('');
+    extrasGrid.innerHTML = '<div>' + col1 + '</div><div>' + col2 + '</div>';
+    var newReveals = extrasGrid.querySelectorAll('.reveal');
+    if ('IntersectionObserver' in window) {
+      Array.prototype.forEach.call(newReveals, function (el) { io.observe(el); });
+    } else {
+      Array.prototype.forEach.call(newReveals, function (el) { el.classList.add('in'); });
+    }
+  }
+
+  /* ---------- Booking calculator ---------- */
+  var bVehicleEl = document.getElementById('bVehicle');
+  var bVehicleNoteEl = document.getElementById('bVehicleNote');
+  var bPackageEl = document.getElementById('bPackage');
+  var bExtrasEl = document.getElementById('bExtras');
+  var sVehicleEl = document.getElementById('sVehicle');
+  var sPackageEl = document.getElementById('sPackage');
+  var sExtrasEl = document.getElementById('sExtras');
+  var sDurationEl = document.getElementById('sDuration');
+  var sTotalEl = document.getElementById('sTotal');
+  var payFullBtn = document.getElementById('payFull');
+  var payDepositBtn = document.getElementById('payDeposit');
+  var sendBtn = document.getElementById('sendBtn');
+  var copyBox = document.getElementById('copyBox');
+  var copyText = document.getElementById('copyText');
+  var copyBtn = document.getElementById('copyBtn');
+  var copyToast = document.getElementById('copyToast');
+  var smsLink = document.getElementById('smsLink');
+
+  if (bVehicleEl && bPackageEl && bExtrasEl) {
+    var state = { vehicleKey: 'regular', packageKey: 'express', extras: {}, pay: 'full' };
+
+    function currentVehicle() {
+      var i;
+      for (i = 0; i < VEHICLES.length; i++) if (VEHICLES[i].key === state.vehicleKey) return VEHICLES[i];
+      return VEHICLES[0];
+    }
+    function currentPackage() {
+      var i;
+      for (i = 0; i < PACKAGES.length; i++) if (PACKAGES[i].key === state.packageKey) return PACKAGES[i];
+      return PACKAGES[0];
+    }
+    function matchesVehicle(item, v) {
+      if (item.tokens === null) return true;
+      return item.tokens.some(function (t) {
+        return v.kw.some(function (k) { return t.indexOf(k) !== -1 || k.indexOf(t) !== -1; });
+      });
+    }
+
+    function renderVehicles() {
+      bVehicleEl.innerHTML = VEHICLES.map(function (v) {
+        return '<button type="button" class="b-opt' + (v.key === state.vehicleKey ? ' sel' : '') + '" data-veh="' + v.key + '">' + v.label + '</button>';
+      }).join('');
+      var vh = currentVehicle();
+      bVehicleNoteEl.textContent = vh.extrasApprox ? 'Пакети мийки для позашляховика — точна ціна з прайсу. Для додаткових послуг (крок 3) точного варіанту для позашляховика в прайсі немає, показані ціни як для легкового звичайного — уточнюйте при записі.' : '';
+      Array.prototype.forEach.call(bVehicleEl.querySelectorAll('.b-opt'), function (btn) {
+        btn.addEventListener('click', function () {
+          state.vehicleKey = btn.getAttribute('data-veh');
+          state.extras = {};
+          renderVehicles();
+          renderPackages();
+          renderExtras();
+          updateSummary();
+        });
+      });
+    }
+
+    function renderPackages() {
+      var vh = currentVehicle();
+      bPackageEl.innerHTML = PACKAGES.map(function (p) {
+        var pr = p.price[vh.key];
+        return '<button type="button" class="b-opt' + (p.key === state.packageKey ? ' sel' : '') + '" data-pkg="' + p.key + '">' +
+          p.name + '<small>' + pr + ' грн</small></button>';
+      }).join('');
+      Array.prototype.forEach.call(bPackageEl.querySelectorAll('.b-opt'), function (btn) {
+        btn.addEventListener('click', function () {
+          state.packageKey = btn.getAttribute('data-pkg');
+          renderPackages();
+          updateSummary();
+        });
+      });
+    }
+
+    function renderExtras() {
+      var vh = currentVehicle();
+      var filtered = PARSED_EXTRAS.filter(function (e) { return matchesVehicle(e, vh); });
+      bExtrasEl.innerHTML = filtered.map(function (e, idx) {
+        var id = 'ex' + idx;
+        return '<label class="b-extra-check"><input type="checkbox" data-id="' + id + '" />' +
+          '<span>' + e.base + '</span><span class="price tabular">' + e.price + ' грн</span></label>';
+      }).join('');
+      Array.prototype.forEach.call(bExtrasEl.querySelectorAll('input'), function (cb, idx) {
+        cb.addEventListener('change', function () {
+          var item = filtered[idx];
+          var key = item.name || (item.base + '|' + (item.raw || ''));
+          if (cb.checked) { state.extras[key] = item; } else { delete state.extras[key]; }
+          updateSummary();
+        });
+      });
+    }
+
+    function selectedExtrasList() {
+      var out = [];
+      for (var k in state.extras) if (Object.prototype.hasOwnProperty.call(state.extras, k)) out.push(state.extras[k]);
+      return out;
+    }
+
+    function updateSummary() {
+      var vh = currentVehicle();
+      var pkg = currentPackage();
+      var pr = pkg.price[vh.key];
+      var extras = selectedExtrasList();
+      var extrasTotal = extras.reduce(function (s, e) { return s + e.price; }, 0);
+      var extrasDuration = extras.reduce(function (s, e) { return s + e.duration; }, 0);
+      var total = pr + extrasTotal;
+      var duration = pkg.duration + extrasDuration;
+
+      sVehicleEl.textContent = vh.label;
+      sPackageEl.textContent = pkg.name + ' — ' + pr + ' грн';
+      sExtrasEl.textContent = extras.length ? extras.map(function (e) { return e.base; }).join(', ') : 'немає';
+      sDurationEl.textContent = '~' + duration + ' хв';
+      sTotalEl.textContent = (state.pay === 'full' ? total : 200).toLocaleString('uk-UA') + ' грн';
+
+      copyBox.classList.remove('show');
+      state._total = total;
+      state._duration = duration;
+      state._pr = pr;
+    }
+
+    payFullBtn.addEventListener('click', function () {
+      state.pay = 'full';
+      payFullBtn.classList.add('sel');
+      payDepositBtn.classList.remove('sel');
+      updateSummary();
+    });
+    payDepositBtn.addEventListener('click', function () {
+      state.pay = 'deposit';
+      payDepositBtn.classList.add('sel');
+      payFullBtn.classList.remove('sel');
+      updateSummary();
+    });
+
+    sendBtn.addEventListener('click', function () {
+      var vh = currentVehicle();
+      var pkg = currentPackage();
+      var extras = selectedExtrasList();
+      var lines = [
+        'One Wash — заявка на запис (з сайту)',
+        'Авто: ' + vh.label,
+        'Пакет: ' + pkg.name + ' — ' + state._pr + ' грн',
+        'Додатково: ' + (extras.length ? extras.map(function (e) { return e.base + ' (' + e.price + ' грн)'; }).join(', ') : 'немає'),
+        'Орієнтовний час: ~' + state._duration + ' хв',
+        'Сума замовлення: ' + state._total.toLocaleString('uk-UA') + ' грн',
+        'Оплата: ' + (state.pay === 'full' ? 'повна сума при записі' : 'передоплата 200 грн, решта на місці')
+      ];
+      var text = lines.join('\n');
+      copyText.value = text;
+      copyBox.classList.add('show');
+      smsLink.href = 'sms:+380683077878?body=' + encodeURIComponent(text);
+
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text).then(function () {
+          copyToast.classList.add('show');
+        }).catch(function () {
+          copyText.focus();
+          copyText.select();
+        });
+      } else {
+        copyText.focus();
+        copyText.select();
+      }
+    });
+
+    copyBtn.addEventListener('click', function () {
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(copyText.value).then(function () {
+          copyToast.classList.add('show');
+        }).catch(function () {
+          copyText.focus();
+          copyText.select();
+        });
+      } else {
+        copyText.focus();
+        copyText.select();
+      }
+    });
+
+    renderVehicles();
+    renderPackages();
+    renderExtras();
+    updateSummary();
+  }
+})();
+</script>
