@@ -448,6 +448,28 @@
   .b-opt.sel { border-color: var(--red); background: var(--red); color: #fff; }
   .b-opt small { display: block; font-weight: 400; opacity: 0.85; font-size: 0.78rem; margin-top: 2px; }
   .b-note { font-size: 0.8rem; color: var(--iron); margin-top: 10px; }
+  .b-input {
+    display: block;
+    width: 100%;
+    border: 1.5px solid var(--line);
+    background: var(--card, #fff);
+    border-radius: 10px;
+    padding: 11px 14px;
+    font-size: 0.9rem;
+    font-family: 'Golos Text', sans-serif;
+    color: var(--text-on-paper);
+  }
+  .b-input:focus { outline: none; border-color: var(--red); }
+  .b-fields { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  @media (max-width: 560px) { .b-fields { grid-template-columns: 1fr; } }
+  .b-options .b-opt.slot { padding: 9px 14px; font-size: 0.82rem; }
+  .b-opt[disabled] { opacity: 0.4; cursor: not-allowed; }
+  .booking-confirmed {
+    background: var(--ink); color: var(--text-on-ink); border-radius: 16px;
+    padding: 30px; margin-bottom: 30px; text-align: center;
+  }
+  .booking-confirmed h3 { font-size: 1.4rem; margin-bottom: 10px; }
+  .booking-confirmed p { color: var(--smoke); margin: 0; }
 
   .b-extras { display: grid; grid-template-columns: repeat(2, 1fr); gap: 4px 20px; }
   @media (max-width: 560px) { .b-extras { grid-template-columns: 1fr; } }
@@ -765,7 +787,9 @@
         <p class="section-lead">Оберіть авто, пакет і додаткові послуги — сума порахується одразу з реального прайсу One Wash.</p>
       </div>
 
-      <div class="booking-grid">
+      <div id="bookingConfirmed" class="booking-confirmed" style="display:none;"></div>
+
+      <div class="booking-grid" id="bookingForm">
         <div>
           <div class="b-block">
             <span class="b-label">1. Тип авто</span>
@@ -782,6 +806,23 @@
             <span class="b-label">3. Додаткові послуги (необов'язково)</span>
             <div class="b-extras" id="bExtras"></div>
           </div>
+
+          <div class="b-block">
+            <span class="b-label">4. Дата і час</span>
+            <input type="date" class="b-input" id="bDate" />
+            <div class="b-options" id="bSlots" style="margin-top:10px;"></div>
+            <p class="b-note" id="bSlotsNote"></p>
+          </div>
+
+          <div class="b-block">
+            <span class="b-label">5. Ваші дані</span>
+            <div class="b-fields">
+              <input type="text" class="b-input" id="bName" placeholder="Ім'я" autocomplete="name" />
+              <input type="tel" class="b-input" id="bPhone" placeholder="Телефон, напр. +380..." autocomplete="tel" />
+              <input type="text" class="b-input" id="bBrand" placeholder="Марка й модель авто (необов'язково)" autocomplete="off" />
+              <input type="text" class="b-input" id="bPlate" placeholder="Номерний знак (необов'язково)" autocomplete="off" />
+            </div>
+          </div>
         </div>
 
         <div class="summary-card reveal">
@@ -789,10 +830,11 @@
           <div class="summary-row"><span class="k">Авто</span><span class="v" id="sVehicle">—</span></div>
           <div class="summary-row"><span class="k">Пакет</span><span class="v" id="sPackage">—</span></div>
           <div class="summary-row"><span class="k">Додатково</span><span class="v" id="sExtras">—</span></div>
-          <div class="summary-row"><span class="k">Орієнтовний час</span><span class="v" id="sDuration">—</span></div>
+          <div class="summary-row"><span class="k">Дата й час</span><span class="v" id="sWhen">—</span></div>
+          <div class="summary-row"><span class="k">Орієнтовний час мийки</span><span class="v" id="sDuration">—</span></div>
 
           <div class="summary-total">
-            <span>До сплати</span>
+            <span>До сплати зараз</span>
             <span class="amt tabular" id="sTotal">0 грн</span>
           </div>
           <div class="pay-toggle">
@@ -800,19 +842,10 @@
             <button type="button" class="pay-opt" id="payDeposit">Передоплата 200 грн</button>
           </div>
 
-          <button type="button" class="btn btn-primary send-btn" id="sendBtn">Надіслати запит</button>
+          <button type="button" class="btn btn-primary send-btn" id="sendBtn">Сплатити й записатись</button>
+          <p class="b-note" id="bFormError" style="color:var(--red); display:none;"></p>
 
-          <div class="copy-box" id="copyBox">
-            <textarea id="copyText" readonly></textarea>
-            <div class="copy-actions">
-              <button type="button" class="btn btn-ghost-dark" id="copyBtn">Копіювати деталі</button>
-              <a class="btn btn-ghost-dark" id="smsLink" href="#">SMS адміністратору</a>
-              <a class="btn btn-ghost-dark" href="tel:+380683077878">Подзвонити</a>
-            </div>
-            <p class="copy-toast" id="copyToast">Скопійовано — вставте в Instagram-повідомлення або SMS.</p>
-          </div>
-
-          <p class="b-disclaimer">Онлайн-оплата карткою на сайті поки не підключена. Після натискання «Надіслати запит» деталі запису формуються тут же — зателефонуйте, напишіть у SMS чи Instagram, і адміністратор підтвердить час та оформить оплату (WayForPay або на місці).</p>
+          <p class="b-disclaimer">Оплата — через WayForPay (захищене з'єднання, дані картки не потрапляють на цей сайт). Запис одразу з'являється в адмінці One Wash. Не вдалось оплатити онлайн? <a href="tel:+380683077878" style="color:var(--red);">Зателефонуйте</a>.</p>
         </div>
       </div>
     </div>
@@ -987,58 +1020,58 @@
   /* ---------- Real data from the One Wash Supabase database ---------- */
   /* extra_services: is_active = true, fetched from the live booking database */
   var EXTRAS = [
-    { name: 'Антидощ (бус)', price: 450, duration: 45 },
-    { name: 'Антидощ (кросовер/мінівен)', price: 400, duration: 45 },
-    { name: 'Антидощ (легковий звичайний)', price: 300, duration: 45 },
-    { name: 'Антидощ (легковий міні)', price: 250, duration: 45 },
-    { name: 'Видалення слідів від комах (інші категорії)', price: 450, duration: 5 },
-    { name: 'Видалення слідів від комах (легковий звичайний)', price: 400, duration: 5 },
-    { name: 'Видалення слідів від комах (легковий міні)', price: 350, duration: 5 },
-    { name: 'Експрес салону (бус)', price: 575, duration: 60 },
-    { name: 'Експрес салону (кросовер/мінівен)', price: 500, duration: 60 },
-    { name: 'Експрес салону (легковий звичайний)', price: 450, duration: 60 },
-    { name: 'Експрес салону (легковий міні)', price: 400, duration: 60 },
-    { name: 'Зняття бітуму (бус)', price: 900, duration: 60 },
-    { name: 'Зняття бітуму (кросовер/мінівен)', price: 750, duration: 60 },
-    { name: 'Зняття бітуму (легковий звичайний)', price: 650, duration: 60 },
-    { name: 'Зняття бітуму (легковий міні)', price: 550, duration: 60 },
-    { name: 'Кондиціонер шкіри (кросовер/бус/мінівен)', price: 450, duration: 30 },
-    { name: 'Кондиціонер шкіри (легковий звичайний)', price: 400, duration: 30 },
-    { name: 'Кондиціонер шкіри (легковий міні)', price: 350, duration: 30 },
-    { name: 'Локальне видалення плям', price: 200, duration: 30 },
-    { name: 'Озонування', price: 500, duration: 30 },
-    { name: 'Очищення вікон (бус)', price: 300, duration: 20 },
-    { name: 'Очищення вікон (кросовер/мінівен)', price: 250, duration: 20 },
-    { name: 'Очищення вікон (легковий звичайний)', price: 200, duration: 20 },
-    { name: 'Очищення вікон (легковий міні)', price: 150, duration: 20 },
-    { name: 'Полірування ЛФП', price: 5000, duration: 1080 },
-    { name: 'Полірування фар', price: 1000, duration: 90 },
-    { name: 'Рідкий віск (бус)', price: 400, duration: 5 },
-    { name: 'Рідкий віск (кросовер/мінівен)', price: 250, duration: 5 },
-    { name: 'Рідкий віск (легковий звичайний)', price: 200, duration: 5 },
-    { name: 'Рідкий віск (легковий міні)', price: 150, duration: 5 },
-    { name: 'Твердий віск (бус)', price: 950, duration: 60 },
-    { name: 'Твердий віск (кросовер/мінівен)', price: 800, duration: 60 },
-    { name: 'Твердий віск (легковий звичайний)', price: 650, duration: 60 },
-    { name: 'Твердий віск (легковий міні)', price: 550, duration: 60 },
-    { name: 'Хімчистка багажника (бус)', price: 650, duration: 90 },
-    { name: 'Хімчистка багажника (кросовер/мінівен)', price: 600, duration: 90 },
-    { name: 'Хімчистка багажника (легковий звичайний)', price: 500, duration: 90 },
-    { name: 'Хімчистка багажника (легковий міні)', price: 400, duration: 90 },
-    { name: 'Хімчистка дверної карти (бус)', price: 350, duration: 30 },
-    { name: 'Хімчистка дверної карти (кросовер/мінівен)', price: 300, duration: 30 },
-    { name: 'Хімчистка дверної карти (легковий звичайний)', price: 250, duration: 30 },
-    { name: 'Хімчистка дверної карти (легковий міні)', price: 200, duration: 30 },
-    { name: 'Хімчистка сидіння заднього (кросовер/мінівен/бус)', price: 750, duration: 180 },
-    { name: 'Хімчистка сидіння заднього (легковий звичайний)', price: 650, duration: 180 },
-    { name: 'Хімчистка сидіння заднього (легковий міні)', price: 550, duration: 180 },
-    { name: 'Хімчистка сидіння переднього (кросовер/мінівен/бус)', price: 550, duration: 120 },
-    { name: 'Хімчистка сидіння переднього (легковий звичайний)', price: 500, duration: 120 },
-    { name: 'Хімчистка сидіння переднього (легковий міні)', price: 400, duration: 120 },
-    { name: 'Хімчистка стелі (бус)', price: 1000, duration: 90 },
-    { name: 'Хімчистка стелі (кросовер/мінівен)', price: 900, duration: 90 },
-    { name: 'Хімчистка стелі (легковий звичайний)', price: 800, duration: 90 },
-    { name: 'Хімчистка стелі (легковий міні)', price: 600, duration: 90 }
+    { id: '57bee23c-0122-4e7d-bdbd-024af68bf549', name: 'Антидощ (бус)', price: 450, duration: 45 },
+    { id: 'cc7e2988-9930-4b81-bb05-2af0739ad30d', name: 'Антидощ (кросовер/мінівен)', price: 400, duration: 45 },
+    { id: 'cc9348f3-ef8b-4f1b-a0bb-d4bd04ca6859', name: 'Антидощ (легковий звичайний)', price: 300, duration: 45 },
+    { id: '693b76d1-c61a-4a61-ada2-1a801ee8cffc', name: 'Антидощ (легковий міні)', price: 250, duration: 45 },
+    { id: 'b8fad211-10c8-4685-bc4d-d1118a30d40e', name: 'Видалення слідів від комах (інші категорії)', price: 450, duration: 5 },
+    { id: '8eede23c-e79e-48e8-b838-a5c078e3a741', name: 'Видалення слідів від комах (легковий звичайний)', price: 400, duration: 5 },
+    { id: '6c2c98da-08ab-47f1-a5e5-037cd6785678', name: 'Видалення слідів від комах (легковий міні)', price: 350, duration: 5 },
+    { id: '8d634fd1-7669-4020-b3fa-b04e79de7d6f', name: 'Експрес салону (бус)', price: 575, duration: 60 },
+    { id: '4b9573e2-fd37-4ffa-a19d-1524dd16cbc7', name: 'Експрес салону (кросовер/мінівен)', price: 500, duration: 60 },
+    { id: 'df437d14-aab8-4e8e-8524-7b596336a73e', name: 'Експрес салону (легковий звичайний)', price: 450, duration: 60 },
+    { id: 'd23eaa96-3dff-4a32-9a4a-8aeda3b5f7f8', name: 'Експрес салону (легковий міні)', price: 400, duration: 60 },
+    { id: '35410155-9bac-41ca-bf09-017f69ddcddc', name: 'Зняття бітуму (бус)', price: 900, duration: 60 },
+    { id: '0804b319-5d07-4368-8bbd-213638a17f6e', name: 'Зняття бітуму (кросовер/мінівен)', price: 750, duration: 60 },
+    { id: 'a2a02338-aa2f-452c-ad81-b3f7fc1a4c7b', name: 'Зняття бітуму (легковий звичайний)', price: 650, duration: 60 },
+    { id: '516a0eb0-450e-4c30-8663-4d598a38f0f2', name: 'Зняття бітуму (легковий міні)', price: 550, duration: 60 },
+    { id: 'ffab414c-35ba-40ba-9505-28debd6becb8', name: 'Кондиціонер шкіри (кросовер/бус/мінівен)', price: 450, duration: 30 },
+    { id: '501c8822-af17-451e-ae88-d05fd3a97fa3', name: 'Кондиціонер шкіри (легковий звичайний)', price: 400, duration: 30 },
+    { id: '391fef73-b0fe-4b3e-bb61-bda75a605d04', name: 'Кондиціонер шкіри (легковий міні)', price: 350, duration: 30 },
+    { id: '33247956-480d-4471-9a12-3a7af885a840', name: 'Локальне видалення плям', price: 200, duration: 30 },
+    { id: 'd078148e-6643-4fcd-9f3c-1afe2ba1afb6', name: 'Озонування', price: 500, duration: 30 },
+    { id: '768aa4d1-e8b0-41a0-b706-9d0d4d1b66c3', name: 'Очищення вікон (бус)', price: 300, duration: 20 },
+    { id: 'b4f5271d-6575-4112-9673-ec365c86be82', name: 'Очищення вікон (кросовер/мінівен)', price: 250, duration: 20 },
+    { id: '26d6275e-a6ac-4733-86d1-b8a4f7cb95c0', name: 'Очищення вікон (легковий звичайний)', price: 200, duration: 20 },
+    { id: '5e5b80ec-289a-41b9-8645-7e0b79f30e99', name: 'Очищення вікон (легковий міні)', price: 150, duration: 20 },
+    { id: '39338b5e-b6c5-452b-b5d9-3be7dd7b7340', name: 'Полірування ЛФП', price: 5000, duration: 1080 },
+    { id: '52512a76-b964-4b21-be82-2e34609a77ca', name: 'Полірування фар', price: 1000, duration: 90 },
+    { id: '95674e2d-2232-4252-a8ec-3853d1af1113', name: 'Рідкий віск (бус)', price: 400, duration: 5 },
+    { id: '600d7495-3ef4-4e73-884f-17fde9542a07', name: 'Рідкий віск (кросовер/мінівен)', price: 250, duration: 5 },
+    { id: '43adf087-17ce-4029-a232-93b8276493cc', name: 'Рідкий віск (легковий звичайний)', price: 200, duration: 5 },
+    { id: '0bc7e3e9-363a-46c2-bd7a-9499cdea59ff', name: 'Рідкий віск (легковий міні)', price: 150, duration: 5 },
+    { id: 'dfd1ea67-692c-49cc-8fc9-ea3fa876ccb0', name: 'Твердий віск (бус)', price: 950, duration: 60 },
+    { id: 'f5d2e4bc-7e4a-42ef-8c83-af55666df046', name: 'Твердий віск (кросовер/мінівен)', price: 800, duration: 60 },
+    { id: '2defdc12-4453-4055-98e2-0eadc3eb3403', name: 'Твердий віск (легковий звичайний)', price: 650, duration: 60 },
+    { id: '105a18c5-86c7-4b18-be1a-f6bebe9b9831', name: 'Твердий віск (легковий міні)', price: 550, duration: 60 },
+    { id: '09814d7e-148e-45a2-82cd-5475bb547be7', name: 'Хімчистка багажника (бус)', price: 650, duration: 90 },
+    { id: '051db37a-09af-4b4a-9f5e-ba22cfb077e2', name: 'Хімчистка багажника (кросовер/мінівен)', price: 600, duration: 90 },
+    { id: '270f9402-71da-42e9-8f8e-a4edf9d4aae2', name: 'Хімчистка багажника (легковий звичайний)', price: 500, duration: 90 },
+    { id: 'cd3ff366-bc5e-4abe-aa41-9b8757e25526', name: 'Хімчистка багажника (легковий міні)', price: 400, duration: 90 },
+    { id: 'e433db93-f0d9-43a3-b68b-98bf493d3e49', name: 'Хімчистка дверної карти (бус)', price: 350, duration: 30 },
+    { id: '1e755a2a-b186-48c1-a9ad-5834fede6330', name: 'Хімчистка дверної карти (кросовер/мінівен)', price: 300, duration: 30 },
+    { id: 'ef6d7fa0-d7ac-4a45-9949-4d11a6f19d7b', name: 'Хімчистка дверної карти (легковий звичайний)', price: 250, duration: 30 },
+    { id: '5708c750-5141-444c-a549-8d9b8aa2c72a', name: 'Хімчистка дверної карти (легковий міні)', price: 200, duration: 30 },
+    { id: '87d7cf3d-ca8f-4b6f-9fa3-a130831152a4', name: 'Хімчистка сидіння заднього (кросовер/мінівен/бус)', price: 750, duration: 180 },
+    { id: '3a2cbb1c-6201-46c9-b0f7-d8d3a1981b1c', name: 'Хімчистка сидіння заднього (легковий звичайний)', price: 650, duration: 180 },
+    { id: 'f25a544d-f0cb-4113-b319-125206bb4850', name: 'Хімчистка сидіння заднього (легковий міні)', price: 550, duration: 180 },
+    { id: '00e0b2fb-a503-4ad7-904a-7525e9dc28cb', name: 'Хімчистка сидіння переднього (кросовер/мінівен/бус)', price: 550, duration: 120 },
+    { id: '79614bd8-501e-4ccd-ba12-deaa4c3fd517', name: 'Хімчистка сидіння переднього (легковий звичайний)', price: 500, duration: 120 },
+    { id: '5563bb8a-8d02-4cf0-8c93-88b577e0046d', name: 'Хімчистка сидіння переднього (легковий міні)', price: 400, duration: 120 },
+    { id: '7b5633f9-5c74-41a3-98ba-13032cc7e306', name: 'Хімчистка стелі (бус)', price: 1000, duration: 90 },
+    { id: '719966b2-97f6-4cb3-aca6-298a4efe096e', name: 'Хімчистка стелі (кросовер/мінівен)', price: 900, duration: 90 },
+    { id: '39180bed-74fe-4e9c-ac57-ec04441cb8f5', name: 'Хімчистка стелі (легковий звичайний)', price: 800, duration: 90 },
+    { id: 'fdb7be4d-95c7-4f78-aa0b-fb58807bfffd', name: 'Хімчистка стелі (легковий міні)', price: 600, duration: 90 }
   ];
 
   function parseExtra(name) {
@@ -1050,27 +1083,27 @@
 
   var PARSED_EXTRAS = EXTRAS.map(function (e) {
     var p = parseExtra(e.name);
-    return { base: p.base, raw: p.raw, tokens: p.tokens, price: e.price, duration: e.duration };
+    return { id: e.id, base: p.base, raw: p.raw, tokens: p.tokens, price: e.price, duration: e.duration };
   });
 
   /* vehicle_types, straight from the location's real category list */
   var VEHICLES = [
-    { key: 'mini', label: 'Легковий (міні)', kw: ['легковий міні'] },
-    { key: 'regular', label: 'Легковий (звичайний)', kw: ['легковий звичайний'] },
-    { key: 'suv', label: 'Позашляховик', kw: ['легковий звичайний'], extrasApprox: true },
-    { key: 'crossover', label: 'Кросовер / мінівен', kw: ['кросовер', 'мінівен'] },
-    { key: 'bus', label: 'Бус (мікроавтобус)', kw: ['бус'] }
+    { key: 'mini', id: '2cb0a00e-bf27-459f-975a-5dde092b46c2', label: 'Легковий (міні)', kw: ['легковий міні'] },
+    { key: 'regular', id: 'f577e179-cb4c-4149-bd7c-70c8ffb489dc', label: 'Легковий (звичайний)', kw: ['легковий звичайний'] },
+    { key: 'suv', id: '9169b213-8ccf-4674-99f3-5a70fd0d4b31', label: 'Позашляховик', kw: ['легковий звичайний'], extrasApprox: true },
+    { key: 'crossover', id: 'e6a8b723-8f09-49fe-a655-ff2a7663e0be', label: 'Кросовер / мінівен', kw: ['кросовер', 'мінівен'] },
+    { key: 'bus', id: '784d48f7-e524-44e5-9584-e5d7ca679e5c', label: 'Бус (мікроавтобус)', kw: ['бус'] }
   ];
 
   /* wash_types x vehicle_types, exact prices from the wash_prices table (public.wash_prices) */
   var PACKAGES = [
-    { key: 'express', name: 'Експрес', desc: 'Безконтактна мийка, очищення килимків', duration: 60,
+    { key: 'express', id: 'b4f1031f-a6da-4e1a-bb3d-a35c6b8042e7', name: 'Експрес', desc: 'Безконтактна мийка, очищення килимків', duration: 60,
       price: { mini: 400, regular: 450, suv: 500, crossover: 500, bus: 575 } },
-    { key: 'standard', name: 'Стандарт', desc: 'Мийка, килимки, пилосмок, вологе прибирання, скло, чорніння гуми', duration: 90,
+    { key: 'standard', id: '010fb41a-24a3-4663-95c1-2dc8f5d5a0a3', name: 'Стандарт', desc: 'Мийка, килимки, пилосмок, вологе прибирання, скло, чорніння гуми', duration: 90,
       price: { mini: 650, regular: 700, suv: 750, crossover: 750, bus: 800 } },
-    { key: 'premium', name: 'Преміум', desc: 'Розширена мийка + диски, рідкий віск, поліроль', duration: 120,
+    { key: 'premium', id: '432f4e84-0bdf-4fca-a8a9-4849badd4ecd', name: 'Преміум', desc: 'Розширена мийка + диски, рідкий віск, поліроль', duration: 120,
       price: { mini: 800, regular: 900, suv: 1000, crossover: 1000, bus: 1150 } },
-    { key: 'chem', name: 'Хімчистка', desc: 'Комплексна хімчистка салону', duration: 540,
+    { key: 'chem', id: '0985a104-3000-4c84-a1e6-0e52e5c5dd55', name: 'Хімчистка', desc: 'Комплексна хімчистка салону', duration: 540,
       price: { mini: 5000, regular: 6000, suv: 8000, crossover: 8000, bus: 10000 } }
   ];
 
@@ -1120,22 +1153,43 @@
   var bVehicleNoteEl = document.getElementById('bVehicleNote');
   var bPackageEl = document.getElementById('bPackage');
   var bExtrasEl = document.getElementById('bExtras');
+  var bDateEl = document.getElementById('bDate');
+  var bSlotsEl = document.getElementById('bSlots');
+  var bSlotsNoteEl = document.getElementById('bSlotsNote');
+  var bNameEl = document.getElementById('bName');
+  var bPhoneEl = document.getElementById('bPhone');
+  var bBrandEl = document.getElementById('bBrand');
+  var bPlateEl = document.getElementById('bPlate');
   var sVehicleEl = document.getElementById('sVehicle');
   var sPackageEl = document.getElementById('sPackage');
   var sExtrasEl = document.getElementById('sExtras');
+  var sWhenEl = document.getElementById('sWhen');
   var sDurationEl = document.getElementById('sDuration');
   var sTotalEl = document.getElementById('sTotal');
   var payFullBtn = document.getElementById('payFull');
   var payDepositBtn = document.getElementById('payDeposit');
   var sendBtn = document.getElementById('sendBtn');
-  var copyBox = document.getElementById('copyBox');
-  var copyText = document.getElementById('copyText');
-  var copyBtn = document.getElementById('copyBtn');
-  var copyToast = document.getElementById('copyToast');
-  var smsLink = document.getElementById('smsLink');
+  var bFormError = document.getElementById('bFormError');
+  var bookingFormEl = document.getElementById('bookingForm');
+  var bookingConfirmedEl = document.getElementById('bookingConfirmed');
 
   if (bVehicleEl && bPackageEl && bExtrasEl) {
-    var state = { vehicleKey: 'regular', packageKey: 'express', extras: {}, pay: 'full' };
+    var state = { vehicleKey: 'regular', packageKey: 'express', extras: {}, pay: 'full', date: '', time: '' };
+    var slotsRequestId = 0;
+
+    function todayStr() {
+      var d = new Date();
+      return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+    }
+    function addDaysStr(dateStr, days) {
+      var d = new Date(dateStr + 'T00:00:00');
+      d.setDate(d.getDate() + days);
+      return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+    }
+    function formatDateHuman(dateStr) {
+      var d = new Date(dateStr + 'T00:00:00');
+      return d.toLocaleDateString('uk-UA', { day: 'numeric', month: 'long', weekday: 'short' });
+    }
 
     function currentVehicle() {
       var i;
@@ -1168,6 +1222,7 @@
           renderPackages();
           renderExtras();
           updateSummary();
+          loadSlots();
         });
       });
     }
@@ -1184,6 +1239,7 @@
           state.packageKey = btn.getAttribute('data-pkg');
           renderPackages();
           updateSummary();
+          loadSlots();
         });
       });
     }
@@ -1199,9 +1255,10 @@
       Array.prototype.forEach.call(bExtrasEl.querySelectorAll('input'), function (cb, idx) {
         cb.addEventListener('change', function () {
           var item = filtered[idx];
-          var key = item.name || (item.base + '|' + (item.raw || ''));
+          var key = item.id;
           if (cb.checked) { state.extras[key] = item; } else { delete state.extras[key]; }
           updateSummary();
+          loadSlots();
         });
       });
     }
@@ -1212,23 +1269,28 @@
       return out;
     }
 
+    function currentDurationMinutes() {
+      var pkg = currentPackage();
+      var extrasDuration = selectedExtrasList().reduce(function (s, e) { return s + e.duration; }, 0);
+      return pkg.duration + extrasDuration;
+    }
+
     function updateSummary() {
       var vh = currentVehicle();
       var pkg = currentPackage();
       var pr = pkg.price[vh.key];
       var extras = selectedExtrasList();
       var extrasTotal = extras.reduce(function (s, e) { return s + e.price; }, 0);
-      var extrasDuration = extras.reduce(function (s, e) { return s + e.duration; }, 0);
       var total = pr + extrasTotal;
-      var duration = pkg.duration + extrasDuration;
+      var duration = currentDurationMinutes();
 
       sVehicleEl.textContent = vh.label;
       sPackageEl.textContent = pkg.name + ' — ' + pr + ' грн';
       sExtrasEl.textContent = extras.length ? extras.map(function (e) { return e.base; }).join(', ') : 'немає';
+      sWhenEl.textContent = (state.date ? formatDateHuman(state.date) : '—') + (state.time ? ', ' + state.time : '');
       sDurationEl.textContent = '~' + duration + ' хв';
-      sTotalEl.textContent = (state.pay === 'full' ? total : 200).toLocaleString('uk-UA') + ' грн';
+      sTotalEl.textContent = (state.pay === 'full' ? total : Math.min(200, total)).toLocaleString('uk-UA') + ' грн';
 
-      copyBox.classList.remove('show');
       state._total = total;
       state._duration = duration;
       state._pr = pr;
@@ -1247,55 +1309,179 @@
       updateSummary();
     });
 
+    /* ---------- Real slot availability ---------- */
+    function renderSlots(list) {
+      if (!list.length) {
+        bSlotsEl.innerHTML = '';
+        bSlotsNoteEl.textContent = 'На цю дату вільних слотів немає — оберіть інший день.';
+        state.time = '';
+        return;
+      }
+      bSlotsNoteEl.textContent = '';
+      bSlotsEl.innerHTML = list.map(function (t) {
+        return '<button type="button" class="b-opt slot' + (t === state.time ? ' sel' : '') + '" data-time="' + t + '">' + t + '</button>';
+      }).join('');
+      Array.prototype.forEach.call(bSlotsEl.querySelectorAll('.b-opt'), function (btn) {
+        btn.addEventListener('click', function () {
+          state.time = btn.getAttribute('data-time');
+          Array.prototype.forEach.call(bSlotsEl.querySelectorAll('.b-opt'), function (b) { b.classList.remove('sel'); });
+          btn.classList.add('sel');
+          updateSummary();
+        });
+      });
+    }
+
+    function loadSlots() {
+      if (!state.date) return;
+      var myRequest = ++slotsRequestId;
+      state.time = '';
+      bSlotsEl.innerHTML = '';
+      bSlotsNoteEl.textContent = 'Завантажую вільні слоти…';
+      var duration = currentDurationMinutes();
+      fetch('/api/available-slots?date=' + encodeURIComponent(state.date) + '&duration=' + duration)
+        .then(function (r) { return r.json(); })
+        .then(function (data) {
+          if (myRequest !== slotsRequestId) return;
+          renderSlots((data && data.slots) || []);
+        })
+        .catch(function () {
+          if (myRequest !== slotsRequestId) return;
+          bSlotsNoteEl.textContent = 'Не вдалось завантажити вільний час. Спробуйте ще раз або зателефонуйте.';
+        });
+    }
+
+    bDateEl.min = todayStr();
+    bDateEl.max = addDaysStr(todayStr(), 21);
+    bDateEl.value = todayStr();
+    state.date = bDateEl.value;
+    bDateEl.addEventListener('change', function () {
+      state.date = bDateEl.value;
+      loadSlots();
+    });
+
+    /* ---------- Submit & payment ---------- */
+    function showFormError(msg) {
+      bFormError.textContent = msg;
+      bFormError.style.display = 'block';
+    }
+    function clearFormError() {
+      bFormError.style.display = 'none';
+    }
+
+    function submitToWayForPay(purchase) {
+      var form = document.createElement('form');
+      form.method = 'POST';
+      form.action = 'https://secure.wayforpay.com/pay';
+      form.style.display = 'none';
+
+      function addField(name, value) {
+        var input = document.createElement('input');
+        input.type = 'hidden';
+        input.name = name;
+        input.value = value;
+        form.appendChild(input);
+      }
+      Object.keys(purchase).forEach(function (key) {
+        var val = purchase[key];
+        if (val === undefined || val === null) return;
+        if (Array.isArray(val)) {
+          val.forEach(function (v) { addField(key + '[]', v); });
+        } else {
+          addField(key, val);
+        }
+      });
+      document.body.appendChild(form);
+      form.submit();
+    }
+
     sendBtn.addEventListener('click', function () {
+      clearFormError();
+      var name = bNameEl.value.trim();
+      var phone = bPhoneEl.value.trim();
+
+      if (name.length < 2) { showFormError('Вкажіть, будь ласка, ваше ім\'я.'); bNameEl.focus(); return; }
+      if (!/^\+?\d{9,13}$/.test(phone.replace(/[\s()-]/g, ''))) { showFormError('Перевірте номер телефону.'); bPhoneEl.focus(); return; }
+      if (!state.date) { showFormError('Оберіть дату візиту.'); return; }
+      if (!state.time) { showFormError('Оберіть вільний час візиту.'); return; }
+
       var vh = currentVehicle();
       var pkg = currentPackage();
       var extras = selectedExtrasList();
-      var lines = [
-        'One Wash — заявка на запис (з сайту)',
-        'Авто: ' + vh.label,
-        'Пакет: ' + pkg.name + ' — ' + state._pr + ' грн',
-        'Додатково: ' + (extras.length ? extras.map(function (e) { return e.base + ' (' + e.price + ' грн)'; }).join(', ') : 'немає'),
-        'Орієнтовний час: ~' + state._duration + ' хв',
-        'Сума замовлення: ' + state._total.toLocaleString('uk-UA') + ' грн',
-        'Оплата: ' + (state.pay === 'full' ? 'повна сума при записі' : 'передоплата 200 грн, решта на місці')
-      ];
-      var text = lines.join('\n');
-      copyText.value = text;
-      copyBox.classList.add('show');
-      smsLink.href = 'sms:+380683077878?body=' + encodeURIComponent(text);
 
-      if (navigator.clipboard && navigator.clipboard.writeText) {
-        navigator.clipboard.writeText(text).then(function () {
-          copyToast.classList.add('show');
-        }).catch(function () {
-          copyText.focus();
-          copyText.select();
+      sendBtn.disabled = true;
+      sendBtn.textContent = 'Обробка…';
+
+      fetch('/api/create-payment', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          washTypeKey: pkg.key,
+          vehicleTypeId: vh.id,
+          extraServiceIds: extras.map(function (e) { return e.id; }),
+          date: state.date,
+          time: state.time,
+          name: name,
+          phone: phone,
+          plate: bPlateEl.value.trim() || null,
+          brandModel: bBrandEl.value.trim() || null,
+          payMode: state.pay,
+        }),
+      })
+        .then(function (r) { return r.json().then(function (data) { return { ok: r.ok, data: data }; }); })
+        .then(function (res) {
+          if (!res.ok) {
+            throw new Error(res.data && res.data.error ? res.data.error : 'Помилка сервера');
+          }
+          submitToWayForPay(res.data.purchase);
+        })
+        .catch(function (err) {
+          sendBtn.disabled = false;
+          sendBtn.textContent = 'Сплатити й записатись';
+          showFormError((err && err.message) || 'Щось пішло не так. Спробуйте ще раз або зателефонуйте.');
+          loadSlots();
         });
-      } else {
-        copyText.focus();
-        copyText.select();
-      }
     });
 
-    copyBtn.addEventListener('click', function () {
-      if (navigator.clipboard && navigator.clipboard.writeText) {
-        navigator.clipboard.writeText(copyText.value).then(function () {
-          copyToast.classList.add('show');
-        }).catch(function () {
-          copyText.focus();
-          copyText.select();
-        });
-      } else {
-        copyText.focus();
-        copyText.select();
+    /* ---------- Returning from WayForPay ---------- */
+    function checkReturnFromPayment() {
+      var params = new URLSearchParams(window.location.search);
+      var ref = params.get('order');
+      if (!ref) return;
+
+      bookingFormEl.style.display = 'none';
+      bookingConfirmedEl.style.display = 'block';
+      bookingConfirmedEl.innerHTML = '<h3>Перевіряємо оплату…</h3><p>Це займає кілька секунд.</p>';
+
+      var attempts = 0;
+      function poll() {
+        attempts++;
+        fetch('/api/order-status?ref=' + encodeURIComponent(ref))
+          .then(function (r) { return r.json(); })
+          .then(function (data) {
+            if (data.status === 'paid') {
+              bookingConfirmedEl.innerHTML = '<h3>Дякуємо, ' + (data.client_name || '') + '! Запис підтверджено ✅</h3>' +
+                '<p>Очікуємо на вас ' + (data.scheduled_at ? new Date(data.scheduled_at).toLocaleString('uk-UA', { dateStyle: 'long', timeStyle: 'short' }) : '') + '. Деталі надіслано адміністратору.</p>';
+            } else if (data.status === 'failed') {
+              bookingConfirmedEl.innerHTML = '<h3>Оплата не пройшла</h3><p>Спробуйте ще раз або зателефонуйте нам: <a href="tel:+380683077878" style="color:#fff;">+38 (068) 307-78-78</a>.</p>';
+            } else if (attempts < 8) {
+              setTimeout(poll, 2500);
+            } else {
+              bookingConfirmedEl.innerHTML = '<h3>Обробляємо оплату…</h3><p>Якщо статус не зміниться протягом кількох хвилин, зателефонуйте нам: <a href="tel:+380683077878" style="color:#fff;">+38 (068) 307-78-78</a>.</p>';
+            }
+          })
+          .catch(function () {
+            bookingConfirmedEl.innerHTML = '<h3>Не вдалось перевірити статус</h3><p>Зателефонуйте нам, щоб підтвердити запис: <a href="tel:+380683077878" style="color:#fff;">+38 (068) 307-78-78</a>.</p>';
+          });
       }
-    });
+      poll();
+    }
 
     renderVehicles();
     renderPackages();
     renderExtras();
     updateSummary();
+    loadSlots();
+    checkReturnFromPayment();
   }
 })();
 </script>
