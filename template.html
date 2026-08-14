@@ -817,6 +817,7 @@
               <input type="text" class="b-input" id="bBrand" placeholder="Марка й модель авто (необов'язково)" autocomplete="off" />
               <input type="text" class="b-input" id="bPlate" placeholder="Номерний знак (необов'язково)" autocomplete="off" />
             </div>
+            <p class="b-note" id="bClientFound" style="display:none;"></p>
           </div>
         </div>
 
@@ -1218,6 +1219,7 @@
   var bPhoneEl = document.getElementById('bPhone');
   var bBrandEl = document.getElementById('bBrand');
   var bPlateEl = document.getElementById('bPlate');
+  var bClientFoundEl = document.getElementById('bClientFound');
   var sVehicleEl = document.getElementById('sVehicle');
   var sPackageEl = document.getElementById('sPackage');
   var sExtrasEl = document.getElementById('sExtras');
@@ -1417,6 +1419,40 @@
     bDateEl.addEventListener('change', function () {
       state.date = bDateEl.value;
       loadSlots();
+    });
+
+    /* ---------- Returning-client lookup: don't make people retype their own car ---------- */
+    var lastLookedUpPhone = '';
+    bPhoneEl.addEventListener('blur', function () {
+      var phone = bPhoneEl.value.trim();
+      if (!phone || phone === lastLookedUpPhone) return;
+      lastLookedUpPhone = phone;
+      fetch('/api/client-lookup?phone=' + encodeURIComponent(phone))
+        .then(function (r) { return r.json(); })
+        .then(function (data) {
+          if (!data || !data.found) { bClientFoundEl.style.display = 'none'; return; }
+          if (data.name && !bNameEl.value.trim()) bNameEl.value = data.name;
+          var noteParts = ['✅ Впізнали вас' + (data.name ? ', ' + data.name : '') + '!'];
+          if (data.car) {
+            if (data.car.brandModel && !bBrandEl.value.trim()) bBrandEl.value = data.car.brandModel;
+            if (data.car.plate && !bPlateEl.value.trim()) bPlateEl.value = data.car.plate;
+            if (data.car.vehicleTypeId) {
+              var matchedVehicle = VEHICLES.find(function (v) { return v.id === data.car.vehicleTypeId; });
+              if (matchedVehicle && matchedVehicle.key !== state.vehicleKey) {
+                state.vehicleKey = matchedVehicle.key;
+                renderVehicles();
+                renderPackages();
+                renderExtras();
+                updateSummary();
+                loadSlots();
+              }
+            }
+            noteParts.push('дані авто підтягнуто автоматично, щоб не заводити дублікат — перевірте й змініть за потреби.');
+          }
+          bClientFoundEl.textContent = noteParts.join(' ');
+          bClientFoundEl.style.display = 'block';
+        })
+        .catch(function () { /* non-critical convenience lookup — silently skip on failure */ });
     });
 
     /* ---------- Submit & payment ---------- */

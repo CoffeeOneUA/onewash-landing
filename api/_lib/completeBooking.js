@@ -37,16 +37,35 @@ async function completePaidBooking(link, paidAmount) {
   }
 
   // ---- car (optional — only if plate/model was given) ----
+  // Don't create a second row for a car the client already has on file — match by plate
+  // (normalized: no spaces, uppercased) against this client's existing cars first.
   let carId = null;
   if (link.plate || link.brand_model) {
-    const newCar = await sbInsert('cars', {
-      client_id: clientId,
-      plate: link.plate,
-      brand_model: link.brand_model,
-      color: link.color,
-      vehicle_type_id: link.vehicle_type_id,
-    });
-    carId = newCar.id;
+    let existingCarId = null;
+    if (link.plate) {
+      const normalizedPlate = String(link.plate).replace(/\s+/g, '').toUpperCase();
+      const clientCars = await sbSelect('cars', { select: 'id,plate', client_id: `eq.${clientId}` });
+      const match = clientCars.find((c) => c.plate && String(c.plate).replace(/\s+/g, '').toUpperCase() === normalizedPlate);
+      existingCarId = match ? match.id : null;
+    }
+
+    if (existingCarId) {
+      carId = existingCarId;
+      await sbUpdate('cars', { id: `eq.${carId}` }, {
+        brand_model: link.brand_model,
+        color: link.color,
+        vehicle_type_id: link.vehicle_type_id,
+      });
+    } else {
+      const newCar = await sbInsert('cars', {
+        client_id: clientId,
+        plate: link.plate,
+        brand_model: link.brand_model,
+        color: link.color,
+        vehicle_type_id: link.vehicle_type_id,
+      });
+      carId = newCar.id;
+    }
   }
 
   // ---- the booking itself ----
