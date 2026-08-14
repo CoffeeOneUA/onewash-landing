@@ -126,6 +126,14 @@ module.exports = async (req, res) => {
       serviceUrl: `${origin}/api/wayforpay-callback`,
     });
 
+    console.log('WayForPay purchase created', {
+      orderReference,
+      amount,
+      merchantDomainName: purchase.merchantDomainName,
+      serviceUrl: purchase.serviceUrl,
+      returnUrl: purchase.returnUrl,
+    });
+
     res.status(200).json({ orderReference, scheduledEnd, purchase });
   } catch (err) {
     console.error(err);

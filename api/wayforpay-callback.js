@@ -16,6 +16,7 @@ module.exports = async (req, res) => {
   }
 
   const { orderReference, transactionStatus, amount } = payload;
+  console.log('WayForPay callback received', { orderReference, transactionStatus, amount, merchantAccount: payload.merchantAccount });
   if (!orderReference) { res.status(400).json({ error: 'Missing orderReference' }); return; }
 
   // Always try to acknowledge in the format WayForPay expects, even on internal errors below,
@@ -27,7 +28,7 @@ module.exports = async (req, res) => {
     console.error('WayForPay signature check failed to run:', e);
   }
   if (!signatureOk) {
-    console.error('WayForPay callback: signature mismatch', orderReference);
+    console.error('WayForPay callback: signature mismatch', orderReference, JSON.stringify(payload));
     res.status(400).json({ error: 'Invalid signature' });
     return;
   }

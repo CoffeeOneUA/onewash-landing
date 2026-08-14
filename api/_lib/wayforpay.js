@@ -7,7 +7,11 @@ const crypto = require('crypto');
 
 const MERCHANT_ACCOUNT = process.env.WAYFORPAY_MERCHANT_ACCOUNT;
 const SECRET_KEY = process.env.WAYFORPAY_SECRET_KEY;
-const DOMAIN = process.env.WAYFORPAY_DOMAIN;
+
+// WayForPay's merchantDomainName expects a bare host (e.g. "www.onewash.com.ua"),
+// not a full URL — strip protocol/path/trailing slash so this works regardless of
+// how the env var was entered (defensive: this has caused a real failed payment before).
+const DOMAIN = (process.env.WAYFORPAY_DOMAIN || '').replace(/^https?:\/\//, '').replace(/\/.*$/, '');
 
 function assertConfigured() {
   if (!MERCHANT_ACCOUNT || !SECRET_KEY || !DOMAIN) {
