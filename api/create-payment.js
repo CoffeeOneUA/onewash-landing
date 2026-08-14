@@ -78,6 +78,7 @@ module.exports = async (req, res) => {
       return;
     }
     const staffId = slot.staffIds[0];
+    const boxId = slot.boxIds ? slot.boxIds[0] : null; // null when the location has no wash_boxes configured
     const scheduledAt = kyivWallToUtcIso(date, time);
     const scheduledEnd = new Date(new Date(scheduledAt).getTime() + durationMinutes * 60000).toISOString();
 
@@ -101,6 +102,7 @@ module.exports = async (req, res) => {
       wash_type_id: washType.id,
       vehicle_type_id: vehicleTypeId,
       staff_id: staffId,
+      box_id: boxId,
       scheduled_at: scheduledAt,
       plate: plate || null,
       brand_model: brandModel || null,

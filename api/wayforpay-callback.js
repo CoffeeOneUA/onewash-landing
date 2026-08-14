@@ -100,6 +100,7 @@ module.exports = async (req, res) => {
       client_id: clientId,
       car_id: carId,
       staff_id: link.staff_id,
+      box_id: link.box_id,
       wash_type_id: link.wash_type_id,
       scheduled_at: scheduledAt,
       scheduled_end: scheduledEnd,

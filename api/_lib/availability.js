@@ -44,7 +44,10 @@ function kyivDateOf(isoTimestamp) {
 }
 
 /**
- * Returns [{ time: 'HH:MM', staffIds: [uuid, ...] }] for the given date + service duration.
+ * Returns [{ time: 'HH:MM', staffIds: [uuid, ...], boxIds: [uuid, ...] | null }]
+ * for the given date + service duration. `boxIds` is null when the location
+ * has no wash_boxes configured at all (nothing to constrain against, same
+ * convention the admin panel uses when no box is picked).
  */
 async function getAvailableSlots(date, durationMinutes) {
   const weekday = weekdayForDate(date);
@@ -60,26 +63,31 @@ async function getAvailableSlots(date, durationMinutes) {
   const openMin = hmsToMinutes(wh.open_time);
   const closeMin = hmsToMinutes(wh.close_time);
 
-  const staff = await sbSelect('staff', {
-    select: 'id',
-    location_id: `eq.${LOCATION_ID}`,
-    is_active: 'eq.true',
-  });
+  const [staff, boxes] = await Promise.all([
+    sbSelect('staff', { select: 'id', location_id: `eq.${LOCATION_ID}`, is_active: 'eq.true' }),
+    sbSelect('wash_boxes', { select: '*', location_id: `eq.${LOCATION_ID}` }),
+  ]);
   if (!staff.length) return [];
   const staffIds = staff.map((s) => s.id);
 
-  const dateOverrides = await sbSelect('staff_schedule_dates', {
-    select: 'staff_id,is_working',
-    staff_id: `in.(${staffIds.join(',')})`,
-    work_date: `eq.${date}`,
-  });
-  const overrideMap = new Map(dateOverrides.map((r) => [r.staff_id, r.is_working]));
+  // is_active may not exist yet on wash_boxes (pre-migration) — treat missing as active,
+  // same fallback convention the admin panel uses.
+  const activeBoxIds = boxes.filter((b) => b.is_active !== false).map((b) => b.id);
+  const boxesConfigured = boxes.length > 0;
 
-  const weeklySchedule = await sbSelect('staff_schedule', {
-    select: 'staff_id,is_working',
-    staff_id: `in.(${staffIds.join(',')})`,
-    weekday: `eq.${weekday}`,
-  });
+  const [dateOverrides, weeklySchedule] = await Promise.all([
+    sbSelect('staff_schedule_dates', {
+      select: 'staff_id,is_working',
+      staff_id: `in.(${staffIds.join(',')})`,
+      work_date: `eq.${date}`,
+    }),
+    sbSelect('staff_schedule', {
+      select: 'staff_id,is_working',
+      staff_id: `in.(${staffIds.join(',')})`,
+      weekday: `eq.${weekday}`,
+    }),
+  ]);
+  const overrideMap = new Map(dateOverrides.map((r) => [r.staff_id, r.is_working]));
   const weeklyMap = new Map(weeklySchedule.map((r) => [r.staff_id, r.is_working]));
 
   const workingStaffIds = staffIds.filter((id) => {
@@ -88,29 +96,34 @@ async function getAvailableSlots(date, durationMinutes) {
     return false; // no schedule row at all => treat as not scheduled that day
   });
   if (!workingStaffIds.length) return [];
+  if (boxesConfigured && !activeBoxIds.length) return []; // boxes exist but all are switched off
 
   // Wide UTC net around the target date, filtered precisely below by Kyiv wall-clock date.
+  // Fetched by location (not just staff_id) because a box can be occupied by a booking
+  // assigned to staff outside today's working set too (edge case, but safer to include).
   const dayBefore = new Date(`${date}T00:00:00Z`);
   dayBefore.setUTCDate(dayBefore.getUTCDate() - 1);
-  const dayAfter = new Date(`${date}T00:00:00Z`);
-  dayAfter.setUTCDate(dayAfter.getUTCDate() + 2);
 
   const existing = await sbSelect('bookings', {
-    select: 'staff_id,scheduled_at,scheduled_end',
-    staff_id: `in.(${workingStaffIds.join(',')})`,
+    select: 'staff_id,box_id,scheduled_at,scheduled_end',
+    location_id: `eq.${LOCATION_ID}`,
     scheduled_at: `gte.${dayBefore.toISOString()}`,
     status: 'neq.cancelled',
   });
 
   const busyByStaff = new Map(workingStaffIds.map((id) => [id, []]));
+  const busyByBox = new Map(activeBoxIds.map((id) => [id, []]));
   for (const b of existing) {
     if (!b.scheduled_end) continue;
     const start = kyivDateOf(b.scheduled_at);
     if (start.date !== date) continue;
     const end = kyivDateOf(b.scheduled_end);
     const endMinutes = end.date === date ? end.minutes : 24 * 60;
-    const arr = busyByStaff.get(b.staff_id);
-    if (arr) arr.push([start.minutes, endMinutes]);
+    const interval = [start.minutes, endMinutes];
+    const staffArr = busyByStaff.get(b.staff_id);
+    if (staffArr) staffArr.push(interval);
+    const boxArr = b.box_id ? busyByBox.get(b.box_id) : null;
+    if (boxArr) boxArr.push(interval);
   }
 
   const now = kyivPartsNow();
@@ -119,11 +132,23 @@ async function getAvailableSlots(date, durationMinutes) {
 
   for (let t = openMin; t + durationMinutes <= closeMin; t += SLOT_STEP_MINUTES) {
     if (isToday && t <= now.minutes + 30) continue; // need at least 30 min notice
-    const free = workingStaffIds.filter((id) => {
+
+    const freeStaff = workingStaffIds.filter((id) => {
       const busy = busyByStaff.get(id) || [];
       return !busy.some(([bStart, bEnd]) => bStart < t + durationMinutes && bEnd > t);
     });
-    if (free.length) slots.push({ time: minutesToHm(t), staffIds: free });
+    if (!freeStaff.length) continue;
+
+    let freeBoxes = null;
+    if (boxesConfigured) {
+      freeBoxes = activeBoxIds.filter((id) => {
+        const busy = busyByBox.get(id) || [];
+        return !busy.some(([bStart, bEnd]) => bStart < t + durationMinutes && bEnd > t);
+      });
+      if (!freeBoxes.length) continue; // staff free, but no box free — can't offer this slot
+    }
+
+    slots.push({ time: minutesToHm(t), staffIds: freeStaff, boxIds: freeBoxes });
   }
 
   return slots;
