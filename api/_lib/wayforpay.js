@@ -80,4 +80,37 @@ function buildAckResponse(orderReference) {
   return { orderReference, status, time, signature };
 }
 
-module.exports = { buildPurchaseRequest, verifyCallbackSignature, buildAckResponse, hmacMd5 };
+/**
+ * Actively asks WayForPay for a transaction's real status, instead of only waiting
+ * passively for the serviceUrl webhook. Used as a safety net: called when the
+ * customer returns to the site after checkout and payment_links is still 'pending'.
+ * Returns the raw WayForPay response (has .transactionStatus, .amount, etc.) or
+ * null if the request itself failed (network error, WayForPay down, etc).
+ */
+async function checkTransactionStatus(orderReference) {
+  assertConfigured();
+  const signature = hmacMd5([MERCHANT_ACCOUNT, orderReference].join(';'));
+  try {
+    const res = await fetch('https://api.wayforpay.com/api', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        transactionType: 'CHECK_STATUS',
+        merchantAccount: MERCHANT_ACCOUNT,
+        orderReference,
+        merchantSignature: signature,
+        apiVersion: 1,
+      }),
+    });
+    if (!res.ok) {
+      console.error('WayForPay CHECK_STATUS HTTP error', res.status);
+      return null;
+    }
+    return await res.json();
+  } catch (err) {
+    console.error('WayForPay CHECK_STATUS request failed', err);
+    return null;
+  }
+}
+
+module.exports = { buildPurchaseRequest, verifyCallbackSignature, buildAckResponse, checkTransactionStatus, hmacMd5 };

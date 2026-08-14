@@ -1,5 +1,18 @@
 const { sbSelect } = require('./supabase');
-const { LOCATION_ID, TIMEZONE, SLOT_STEP_MINUTES } = require('./domain');
+const { LOCATION_ID, TIMEZONE, SLOT_STEP_MINUTES, WASH_TYPES } = require('./domain');
+
+// How long a 'pending' payment_links row holds its slot for. Covers the window between
+// "customer clicked pay" and "webhook/active-check confirms it" — without this, an admin
+// could book the same staff/box out from under a customer who is mid-checkout on WayForPay.
+const PENDING_HOLD_MINUTES = 20;
+
+const WASH_TYPE_DURATION_BY_ID = Object.fromEntries(Object.values(WASH_TYPES).map((w) => [w.id, w.duration]));
+
+function pendingHoldDurationMinutes(link) {
+  const base = WASH_TYPE_DURATION_BY_ID[link.wash_type_id] || 60;
+  const extras = Array.isArray(link.extras) ? link.extras : [];
+  return base + extras.reduce((s, e) => s + Number(e.duration_minutes || 0), 0);
+}
 
 // IMPORTANT / UNVERIFIED ASSUMPTION:
 // `weekday` in location_working_hours / staff_schedule is assumed to be ISO
@@ -104,12 +117,24 @@ async function getAvailableSlots(date, durationMinutes) {
   const dayBefore = new Date(`${date}T00:00:00Z`);
   dayBefore.setUTCDate(dayBefore.getUTCDate() - 1);
 
-  const existing = await sbSelect('bookings', {
-    select: 'staff_id,box_id,scheduled_at,scheduled_end',
-    location_id: `eq.${LOCATION_ID}`,
-    scheduled_at: `gte.${dayBefore.toISOString()}`,
-    status: 'neq.cancelled',
-  });
+  const pendingCutoff = new Date(Date.now() - PENDING_HOLD_MINUTES * 60000).toISOString();
+  const [existing, pendingHolds] = await Promise.all([
+    sbSelect('bookings', {
+      select: 'staff_id,box_id,scheduled_at,scheduled_end',
+      location_id: `eq.${LOCATION_ID}`,
+      scheduled_at: `gte.${dayBefore.toISOString()}`,
+      status: 'neq.cancelled',
+    }),
+    // Recent unpaid checkouts still in progress — held as soft busy intervals so an admin
+    // can't double-book a slot while a customer is mid-payment on WayForPay (see PENDING_HOLD_MINUTES).
+    sbSelect('payment_links', {
+      select: 'staff_id,box_id,scheduled_at,wash_type_id,extras',
+      location_id: `eq.${LOCATION_ID}`,
+      status: 'eq.pending',
+      created_at: `gte.${pendingCutoff}`,
+      scheduled_at: `gte.${dayBefore.toISOString()}`,
+    }),
+  ]);
 
   const busyByStaff = new Map(workingStaffIds.map((id) => [id, []]));
   const busyByBox = new Map(activeBoxIds.map((id) => [id, []]));
@@ -123,6 +148,16 @@ async function getAvailableSlots(date, durationMinutes) {
     const staffArr = busyByStaff.get(b.staff_id);
     if (staffArr) staffArr.push(interval);
     const boxArr = b.box_id ? busyByBox.get(b.box_id) : null;
+    if (boxArr) boxArr.push(interval);
+  }
+  for (const p of pendingHolds) {
+    if (!p.scheduled_at) continue;
+    const start = kyivDateOf(p.scheduled_at);
+    if (start.date !== date) continue;
+    const interval = [start.minutes, start.minutes + pendingHoldDurationMinutes(p)];
+    const staffArr = p.staff_id ? busyByStaff.get(p.staff_id) : null;
+    if (staffArr) staffArr.push(interval);
+    const boxArr = p.box_id ? busyByBox.get(p.box_id) : null;
     if (boxArr) boxArr.push(interval);
   }
 

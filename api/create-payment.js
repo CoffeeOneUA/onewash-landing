@@ -122,7 +122,10 @@ module.exports = async (req, res) => {
       productPrice: [washPrice, ...extras.map((e) => Number(e.price))],
       productCount: [1, ...extras.map(() => 1)],
       clientPhone: phone,
-      returnUrl: `${origin}/?order=${orderReference}`,
+      // Routed through a real serverless function (not straight to "/") because WayForPay's
+      // redirect back is a POST, and a plain static index.html only answers GET/HEAD — see
+      // api/return.js for why.
+      returnUrl: `${origin}/api/return?order=${orderReference}`,
       serviceUrl: `${origin}/api/wayforpay-callback`,
     });
 
