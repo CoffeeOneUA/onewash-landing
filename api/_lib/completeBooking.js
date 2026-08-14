@@ -60,6 +60,14 @@ async function completePaidBooking(link, paidAmount) {
 
   const isFullyPaid = paidAmount >= Number(link.total_cost || link.amount);
 
+  // Field names/values here mirror the platform's own wayforpay-webhook Supabase Edge
+  // Function exactly (mage-wash-client/supabase/functions/wayforpay-webhook) — that's
+  // what the admin panel (onewash-worker-app) actually reads, so this must match it,
+  // not invent its own vocabulary. In particular: payment_status is 'paid'/'partial'
+  // (never 'not_paid' for a completed WayForPay payment), and there's no
+  // prepayment_amount column being written anywhere on the platform — sending one
+  // would make this insert fail outright (PostgREST rejects unknown columns), silently
+  // losing the booking despite the money already being collected.
   const booking = await sbInsert('bookings', {
     location_id: LOCATION_ID,
     client_id: clientId,
@@ -69,13 +77,12 @@ async function completePaidBooking(link, paidAmount) {
     wash_type_id: link.wash_type_id,
     scheduled_at: scheduledAt,
     scheduled_end: scheduledEnd,
-    status: 'confirmed', // NOTE: verify this matches the admin panel's expected status vocabulary
+    status: 'confirmed',
     source: 'site',
     total_price: link.total_cost || link.amount,
-    payment_status: isFullyPaid ? 'paid' : 'not_paid',
+    payment_status: isFullyPaid ? 'paid' : 'partial',
     paid_amount: paidAmount,
-    prepayment_status: isFullyPaid ? 'not_applicable' : 'paid',
-    prepayment_amount: isFullyPaid ? 0 : paidAmount,
+    prepayment_status: 'paid',
     notes: link.notes,
   });
 

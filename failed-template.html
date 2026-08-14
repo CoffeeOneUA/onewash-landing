@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Оплата не пройшла — One Wash</title>
+<meta name="robots" content="noindex" />
+<link rel="icon" type="image/png" href="data:image/png;base64,__FAVICON64_B64__" />
+<link rel="apple-touch-icon" href="data:image/png;base64,__FAVICON180_B64__" />
+<style>
+  @font-face {
+    font-family: 'Oswald';
+    font-style: normal;
+    font-weight: 200 700;
+    font-display: swap;
+    src: url(data:font/woff2;base64,__OSWALD_B64__) format('woff2');
+  }
+  @font-face {
+    font-family: 'Golos Text';
+    font-style: normal;
+    font-weight: 300 800;
+    font-display: swap;
+    src: url(data:font/woff2;base64,__GOLOS_B64__) format('woff2');
+  }
+  :root {
+    --ink: #0b0b0c;
+    --ink-2: #19181b;
+    --line-dark: rgba(247, 244, 239, 0.14);
+    --paper: #f7f4ef;
+    --line: #ddd5c8;
+    --red: #e2131d;
+    --red-deep: #9e0d14;
+    --iron: #6e675f;
+    --smoke: #b6afa6;
+    --text-on-paper: #1b1712;
+    --text-on-ink: #f7f4ef;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--paper);
+    color: var(--text-on-paper);
+    font-family: 'Golos Text', 'Segoe UI', sans-serif;
+    font-size: 16px;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+  h1, h2, h3 {
+    font-family: 'Oswald', 'Arial Narrow', sans-serif;
+    text-transform: uppercase;
+    font-weight: 600;
+    letter-spacing: 0.01em;
+    line-height: 1.16;
+    margin: 0;
+  }
+  a { color: inherit; }
+  .wrap { max-width: 720px; margin: 0 auto; padding: 0 clamp(20px, 4vw, 48px); width: 100%; }
+  header.site {
+    background: var(--ink);
+    border-bottom: 2px solid var(--red);
+  }
+  .header-row { display: flex; align-items: center; justify-content: center; padding: 16px clamp(20px, 4vw, 48px); }
+  .brand { display: flex; align-items: center; text-decoration: none; }
+  .brand img { height: 44px; width: auto; }
+  main { flex: 1; display: flex; align-items: center; padding: clamp(36px, 8vw, 70px) 0; }
+  .btn {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 13px 24px; border-radius: 8px; font-weight: 700; font-size: 0.88rem;
+    text-decoration: none; letter-spacing: 0.01em; border: 1.5px solid transparent;
+    cursor: pointer; transition: transform 0.12s ease, background 0.15s ease, border-color 0.15s ease;
+  }
+  .btn:hover { transform: translateY(-1px); }
+  .btn-primary { background: var(--red); color: #fff; }
+  .btn-primary:hover { background: var(--red-deep); }
+  .btn-ghost { background: transparent; border-color: var(--line); color: var(--text-on-paper); }
+  .btn-ghost:hover { border-color: var(--iron); }
+  .status-card {
+    background: var(--ink); color: var(--text-on-ink); border-radius: 20px;
+    padding: clamp(28px, 5vw, 48px); text-align: center;
+  }
+  .status-icon {
+    width: 60px; height: 60px; border-radius: 50%; background: var(--red);
+    display: flex; align-items: center; justify-content: center; margin: 0 auto 20px;
+    font-size: 1.6rem; color: #fff; font-family: 'Oswald', sans-serif;
+  }
+  .status-card h1 { font-size: clamp(1.5rem, 3vw + 0.6rem, 2.1rem); }
+  .status-card .lead { color: var(--smoke); margin: 12px 0 0; font-size: 0.98rem; }
+  .details {
+    margin-top: 26px; background: var(--ink-2); border: 1px solid var(--line-dark);
+    border-radius: 14px; padding: 18px 20px; text-align: left; display: grid; gap: 10px;
+  }
+  .details .row { display: flex; justify-content: space-between; gap: 14px; font-size: 0.9rem; }
+  .details .row span:first-child { color: var(--smoke); }
+  .details .row span:last-child { font-weight: 600; text-align: right; }
+  .actions { display: flex; flex-wrap: wrap; gap: 12px; justify-content: center; margin-top: 28px; }
+  footer { padding: 22px 0; text-align: center; font-size: 0.8rem; color: var(--iron); }
+  footer a { text-decoration: none; }
+  footer a:hover { color: var(--red); }
+</style>
+</head>
+<body>
+
+<header class="site">
+  <div class="header-row">
+    <a class="brand" href="/">
+      <img src="data:image/png;base64,__LOGO_B64__" alt="One Wash" />
+    </a>
+  </div>
+</header>
+
+<main>
+  <div class="wrap">
+    <div class="status-card" id="statusCard">
+      <div class="status-icon">!</div>
+      <h1>Оплата не пройшла</h1>
+      <p class="lead">Кошти не було списано — час запису лишився вільним, ви можете спробувати ще раз.</p>
+      <div class="actions">
+        <a class="btn btn-primary" href="/#booking">Спробувати ще раз</a>
+        <a class="btn btn-ghost" href="tel:+380683077878" style="border-color:rgba(247,244,239,0.3);color:#fff;">Зателефонувати</a>
+      </div>
+    </div>
+  </div>
+</main>
+
+<footer>
+  <div class="wrap">
+    Питання щодо запису? <a href="tel:+380683077878">+38 (068) 307-78-78</a> · One Wash, вул. Протасевича 11А, Тернопіль
+  </div>
+</footer>
+
+<script>
+(function () {
+  // Best-effort: if we have an order ref, show what was being booked (helps the
+  // customer confirm it really is the right attempt) and double-check it's really
+  // failed and not just still processing — WayForPay CHECK_STATUS is asynchronous,
+  // so a customer could in theory land here from a stale/retried callback.
+  var card = document.getElementById('statusCard');
+  var params = new URLSearchParams(window.location.search);
+  var ref = params.get('order');
+  if (!ref) return;
+
+  fetch('/api/order-status?ref=' + encodeURIComponent(ref))
+    .then(function (r) { return r.json(); })
+    .then(function (data) {
+      if (data.status === 'paid') {
+        // Turns out it did go through (race with a retry) — send them to the real success page.
+        window.location.replace('/success.html?order=' + encodeURIComponent(ref));
+        return;
+      }
+      if (data.status === 'pending') {
+        window.location.replace('/success.html?order=' + encodeURIComponent(ref));
+        return;
+      }
+      if (data.total_cost) {
+        var row = document.createElement('div');
+        row.className = 'details';
+        row.innerHTML = '<div class="row"><span>Сума</span><span>' + Number(data.total_cost).toLocaleString('uk-UA') + ' грн</span></div>' +
+          (data.scheduled_at ? '<div class="row"><span>Дата й час</span><span>' + new Date(data.scheduled_at).toLocaleString('uk-UA', { dateStyle: 'long', timeStyle: 'short' }) + '</span></div>' : '');
+        card.insertBefore(row, card.querySelector('.actions'));
+      }
+    })
+    .catch(function () { /* non-critical — the static failure message above already covers it */ });
+})();
+</script>
+</body>
+</html>

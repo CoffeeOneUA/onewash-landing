@@ -464,16 +464,6 @@
   @media (max-width: 560px) { .b-fields { grid-template-columns: 1fr; } }
   .b-options .b-opt.slot { padding: 9px 14px; font-size: 0.82rem; }
   .b-opt[disabled] { opacity: 0.4; cursor: not-allowed; }
-  .booking-confirmed {
-    background: var(--ink); color: var(--text-on-ink); border-radius: 16px;
-    padding: 30px; margin-bottom: 30px; text-align: center;
-  }
-  .booking-confirmed h3 { font-size: 1.4rem; margin-bottom: 10px; }
-  .booking-confirmed p { color: var(--smoke); margin: 0; }
-  .booking-confirmed .b-confirmed-actions {
-    display: flex; flex-wrap: wrap; gap: 12px; justify-content: center; margin-top: 22px;
-  }
-  .booking-confirmed .btn { padding: 12px 22px; font-size: 0.85rem; }
 
   .b-extras { display: grid; grid-template-columns: repeat(2, 1fr); gap: 4px 20px; }
   @media (max-width: 560px) { .b-extras { grid-template-columns: 1fr; } }
@@ -790,8 +780,6 @@
         </div>
         <p class="section-lead">Оберіть авто, пакет і додаткові послуги — сума порахується одразу з реального прайсу One Wash.</p>
       </div>
-
-      <div id="bookingConfirmed" class="booking-confirmed" style="display:none;"></div>
 
       <div class="booking-grid" id="bookingForm">
         <div>
@@ -1174,8 +1162,6 @@
   var payDepositBtn = document.getElementById('payDeposit');
   var sendBtn = document.getElementById('sendBtn');
   var bFormError = document.getElementById('bFormError');
-  var bookingFormEl = document.getElementById('bookingForm');
-  var bookingConfirmedEl = document.getElementById('bookingConfirmed');
 
   if (bVehicleEl && bPackageEl && bExtrasEl) {
     var state = { vehicleKey: 'regular', packageKey: 'express', extras: {}, pay: 'full', date: '', time: '' };
@@ -1446,91 +1432,13 @@
         });
     });
 
-    /* ---------- Returning from WayForPay ---------- */
-    var PHONE_LINK = '<a href="tel:+380683077878" style="color:#fff;">+38 (068) 307-78-78</a>';
-    var HOME_BTN = '<a class="btn btn-ghost-dark" href="/">На головну</a>';
-
-    function escapeHtml(s) {
-      return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) {
-        return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
-      });
-    }
-
-    // Builds a downloadable .ics file (works with iOS/Android/desktop calendar apps)
-    // from the confirmed slot, so "Додати в календар" doesn't depend on any external service.
-    function buildCalendarDataUri(data) {
-      if (!data.scheduled_at) return null;
-      function toIcsDate(iso) {
-        return iso.replace(/[-:]/g, '').replace(/\.\d{3}Z$/, 'Z');
-      }
-      var end = data.scheduled_end || new Date(new Date(data.scheduled_at).getTime() + (data.duration_minutes || 60) * 60000).toISOString();
-      var lines = [
-        'BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//One Wash//Booking//UK',
-        'BEGIN:VEVENT',
-        'UID:' + Date.now() + '@onewash.com.ua',
-        'DTSTAMP:' + toIcsDate(new Date().toISOString()),
-        'DTSTART:' + toIcsDate(data.scheduled_at),
-        'DTEND:' + toIcsDate(end),
-        'SUMMARY:Мийка авто — One Wash',
-        'DESCRIPTION:Запис на мийку авто в One Wash (Тернопіль). Тел: +38 (068) 307-78-78',
-        'LOCATION:One Wash, Тернопіль',
-        'END:VEVENT', 'END:VCALENDAR',
-      ];
-      return 'data:text/calendar;charset=utf-8,' + encodeURIComponent(lines.join('\r\n'));
-    }
-
-    function renderPaidConfirmation(data) {
-      var when = data.scheduled_at ? new Date(data.scheduled_at).toLocaleString('uk-UA', { dateStyle: 'long', timeStyle: 'short' }) : '';
-      var calUri = buildCalendarDataUri(data);
-      var actions = '<div class="b-confirmed-actions">' +
-        (calUri ? '<a class="btn btn-primary" href="' + calUri + '" download="one-wash-zapys.ics">Додати в календар</a>' : '') +
-        HOME_BTN +
-        '</div>';
-      bookingConfirmedEl.innerHTML = '<h3>Дякуємо, ' + escapeHtml(data.client_name) + '! Запис підтверджено ✅</h3>' +
-        '<p>Очікуємо на вас ' + when + '. Деталі надіслано адміністратору.</p>' + actions;
-    }
-
-    function checkReturnFromPayment() {
-      var params = new URLSearchParams(window.location.search);
-      var ref = params.get('order');
-      if (!ref) return;
-
-      bookingFormEl.style.display = 'none';
-      bookingConfirmedEl.style.display = 'block';
-      bookingConfirmedEl.innerHTML = '<h3>Перевіряємо оплату…</h3><p>Це займає кілька секунд, будь ласка, не закривайте сторінку.</p>';
-
-      var attempts = 0;
-      function poll() {
-        attempts++;
-        fetch('/api/order-status?ref=' + encodeURIComponent(ref))
-          .then(function (r) { return r.json(); })
-          .then(function (data) {
-            if (data.status === 'paid') {
-              renderPaidConfirmation(data);
-            } else if (data.status === 'failed') {
-              bookingConfirmedEl.innerHTML = '<h3>Оплата не пройшла</h3><p>Спробуйте ще раз або зателефонуйте нам: ' + PHONE_LINK + '.</p>' +
-                '<div class="b-confirmed-actions">' + HOME_BTN + '</div>';
-            } else if (attempts < 8) {
-              setTimeout(poll, 2500);
-            } else {
-              bookingConfirmedEl.innerHTML = '<h3>Обробляємо оплату…</h3><p>Оплата пройшла, ми підтверджуємо запис — це може зайняти ще кілька хвилин. Якщо запис не з\'явиться, зателефонуйте нам: ' + PHONE_LINK + '.</p>' +
-                '<div class="b-confirmed-actions">' + HOME_BTN + '</div>';
-            }
-          })
-          .catch(function () {
-            bookingConfirmedEl.innerHTML = '<h3>Не вдалось перевірити статус</h3><p>Зателефонуйте нам, щоб підтвердити запис: ' + PHONE_LINK + '.</p>' +
-              '<div class="b-confirmed-actions">' + HOME_BTN + '</div>';
-          });
-      }
-      poll();
-    }
-
     renderVehicles();
     renderPackages();
     renderExtras();
     updateSummary();
     loadSlots();
-    checkReturnFromPayment();
+    // Returning from WayForPay after a payment is handled by dedicated pages
+    // (success.html / payment-failed.html), not here — see api/return.js.
   }
 })();
 </script>

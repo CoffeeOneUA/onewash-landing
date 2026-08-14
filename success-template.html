@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Запис підтверджено — One Wash</title>
+<meta name="robots" content="noindex" />
+<link rel="icon" type="image/png" href="data:image/png;base64,__FAVICON64_B64__" />
+<link rel="apple-touch-icon" href="data:image/png;base64,__FAVICON180_B64__" />
+<style>
+  @font-face {
+    font-family: 'Oswald';
+    font-style: normal;
+    font-weight: 200 700;
+    font-display: swap;
+    src: url(data:font/woff2;base64,__OSWALD_B64__) format('woff2');
+  }
+  @font-face {
+    font-family: 'Golos Text';
+    font-style: normal;
+    font-weight: 300 800;
+    font-display: swap;
+    src: url(data:font/woff2;base64,__GOLOS_B64__) format('woff2');
+  }
+  :root {
+    --ink: #0b0b0c;
+    --ink-2: #19181b;
+    --line-dark: rgba(247, 244, 239, 0.14);
+    --paper: #f7f4ef;
+    --line: #ddd5c8;
+    --red: #e2131d;
+    --red-deep: #9e0d14;
+    --green: #1f9d55;
+    --iron: #6e675f;
+    --smoke: #b6afa6;
+    --text-on-paper: #1b1712;
+    --text-on-ink: #f7f4ef;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--paper);
+    color: var(--text-on-paper);
+    font-family: 'Golos Text', 'Segoe UI', sans-serif;
+    font-size: 16px;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+  h1, h2, h3 {
+    font-family: 'Oswald', 'Arial Narrow', sans-serif;
+    text-transform: uppercase;
+    font-weight: 600;
+    letter-spacing: 0.01em;
+    line-height: 1.16;
+    margin: 0;
+  }
+  a { color: inherit; }
+  .wrap { max-width: 720px; margin: 0 auto; padding: 0 clamp(20px, 4vw, 48px); width: 100%; }
+  header.site {
+    background: var(--ink);
+    border-bottom: 2px solid var(--red);
+  }
+  .header-row { display: flex; align-items: center; justify-content: center; padding: 16px clamp(20px, 4vw, 48px); }
+  .brand { display: flex; align-items: center; text-decoration: none; }
+  .brand img { height: 44px; width: auto; }
+  main { flex: 1; display: flex; align-items: center; padding: clamp(36px, 8vw, 70px) 0; }
+  .btn {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 13px 24px; border-radius: 8px; font-weight: 700; font-size: 0.88rem;
+    text-decoration: none; letter-spacing: 0.01em; border: 1.5px solid transparent;
+    cursor: pointer; transition: transform 0.12s ease, background 0.15s ease, border-color 0.15s ease;
+  }
+  .btn:hover { transform: translateY(-1px); }
+  .btn-primary { background: var(--red); color: #fff; }
+  .btn-primary:hover { background: var(--red-deep); }
+  .btn-ghost { background: transparent; border-color: var(--line); color: var(--text-on-paper); }
+  .btn-ghost:hover { border-color: var(--iron); }
+  .status-card {
+    background: var(--ink); color: var(--text-on-ink); border-radius: 20px;
+    padding: clamp(28px, 5vw, 48px); text-align: center;
+  }
+  .status-icon {
+    width: 60px; height: 60px; border-radius: 50%; background: var(--green);
+    display: flex; align-items: center; justify-content: center; margin: 0 auto 20px;
+    font-size: 1.6rem; color: #fff;
+  }
+  .status-card h1 { font-size: clamp(1.5rem, 3vw + 0.6rem, 2.1rem); }
+  .status-card .lead { color: var(--smoke); margin: 12px 0 0; font-size: 0.98rem; }
+  .details {
+    margin-top: 26px; background: var(--ink-2); border: 1px solid var(--line-dark);
+    border-radius: 14px; padding: 18px 20px; text-align: left; display: grid; gap: 10px;
+  }
+  .details .row { display: flex; justify-content: space-between; gap: 14px; font-size: 0.9rem; }
+  .details .row span:first-child { color: var(--smoke); }
+  .details .row span:last-child { font-weight: 600; text-align: right; }
+  .pay-note { margin-top: 14px; padding-top: 14px; border-top: 1px solid var(--line-dark); font-size: 0.85rem; color: var(--smoke); }
+  .actions { display: flex; flex-wrap: wrap; gap: 12px; justify-content: center; margin-top: 28px; }
+  footer { padding: 22px 0; text-align: center; font-size: 0.8rem; color: var(--iron); }
+  footer a { text-decoration: none; }
+  footer a:hover { color: var(--red); }
+</style>
+</head>
+<body>
+
+<header class="site">
+  <div class="header-row">
+    <a class="brand" href="/">
+      <img src="data:image/png;base64,__LOGO_B64__" alt="One Wash" />
+    </a>
+  </div>
+</header>
+
+<main>
+  <div class="wrap">
+    <div class="status-card" id="statusCard">
+      <div class="status-icon">⏳</div>
+      <h1>Перевіряємо оплату…</h1>
+      <p class="lead">Це займає кілька секунд, будь ласка, не закривайте сторінку.</p>
+    </div>
+  </div>
+</main>
+
+<footer>
+  <div class="wrap">
+    Питання щодо запису? <a href="tel:+380683077878">+38 (068) 307-78-78</a> · One Wash, вул. Протасевича 11А, Тернопіль
+  </div>
+</footer>
+
+<script>
+(function () {
+  var card = document.getElementById('statusCard');
+  var params = new URLSearchParams(window.location.search);
+  var ref = params.get('order');
+
+  var PHONE_LINK = '<a href="tel:+380683077878" style="color:#fff;text-decoration:underline;">+38 (068) 307-78-78</a>';
+  var HOME_BTN = '<a class="btn btn-ghost" href="/" style="border-color:rgba(247,244,239,0.3);color:#fff;">На головну</a>';
+
+  function escapeHtml(s) {
+    return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+    });
+  }
+
+  function renderError(title, lead) {
+    card.innerHTML = '<div class="status-icon" style="background:var(--red);">!</div>' +
+      '<h1>' + title + '</h1><p class="lead">' + lead + '</p>' +
+      '<div class="actions">' + HOME_BTN + '</div>';
+  }
+
+  if (!ref) {
+    renderError('Не знайдено даних про оплату', 'Схоже, ви потрапили на цю сторінку напряму. Якщо ви щойно оплатили запис, зателефонуйте нам: ' + PHONE_LINK + '.');
+    return;
+  }
+
+  function buildCalendarDataUri(data) {
+    if (!data.scheduled_at) return null;
+    function toIcsDate(iso) { return iso.replace(/[-:]/g, '').replace(/\.\d{3}Z$/, 'Z'); }
+    var end = data.scheduled_end || new Date(new Date(data.scheduled_at).getTime() + (data.duration_minutes || 60) * 60000).toISOString();
+    var lines = [
+      'BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//One Wash//Booking//UK',
+      'BEGIN:VEVENT',
+      'UID:' + Date.now() + '@onewash.com.ua',
+      'DTSTAMP:' + toIcsDate(new Date().toISOString()),
+      'DTSTART:' + toIcsDate(data.scheduled_at),
+      'DTEND:' + toIcsDate(end),
+      'SUMMARY:Мийка авто — One Wash',
+      'DESCRIPTION:Запис на мийку авто в One Wash (Тернопіль). Тел: +38 (068) 307-78-78',
+      'LOCATION:One Wash, Тернопіль',
+      'END:VEVENT', 'END:VCALENDAR',
+    ];
+    return 'data:text/calendar;charset=utf-8,' + encodeURIComponent(lines.join('\r\n'));
+  }
+
+  function renderPaid(data) {
+    var when = data.scheduled_at ? new Date(data.scheduled_at).toLocaleString('uk-UA', { dateStyle: 'long', timeStyle: 'short' }) : '—';
+    var calUri = buildCalendarDataUri(data);
+    var paid = Number(data.amount || 0);
+    var total = Number(data.total_cost || data.amount || 0);
+    var remaining = Math.max(total - paid, 0);
+
+    var payRow = remaining > 0
+      ? '<div class="pay-note">Оплачено зараз: <b>' + paid.toLocaleString('uk-UA') + ' грн</b> з ' + total.toLocaleString('uk-UA') + ' грн. Залишок ' + remaining.toLocaleString('uk-UA') + ' грн — на місці, після мийки.</div>'
+      : '<div class="pay-note">Оплачено повністю: <b>' + paid.toLocaleString('uk-UA') + ' грн</b>.</div>';
+
+    card.innerHTML = '<div class="status-icon">✓</div>' +
+      '<h1>Дякуємо, ' + escapeHtml(data.client_name) + '!</h1>' +
+      '<p class="lead">Ваш запис на мийку підтверджено.</p>' +
+      '<div class="details">' +
+        '<div class="row"><span>Дата й час</span><span>' + when + '</span></div>' +
+        payRow +
+      '</div>' +
+      '<div class="actions">' +
+        (calUri ? '<a class="btn btn-primary" href="' + calUri + '" download="one-wash-zapys.ics">Додати в календар</a>' : '') +
+        HOME_BTN +
+      '</div>';
+  }
+
+  var attempts = 0;
+  function poll() {
+    attempts++;
+    fetch('/api/order-status?ref=' + encodeURIComponent(ref))
+      .then(function (r) { return r.json(); })
+      .then(function (data) {
+        if (data.status === 'paid') {
+          renderPaid(data);
+        } else if (data.status === 'failed') {
+          window.location.replace('/payment-failed.html?order=' + encodeURIComponent(ref));
+        } else if (attempts < 10) {
+          setTimeout(poll, 2500);
+        } else {
+          card.innerHTML = '<div class="status-icon" style="background:var(--iron);">⏳</div>' +
+            '<h1>Ще обробляємо оплату…</h1>' +
+            '<p class="lead">Гроші вже списано, ми підтверджуємо запис — це може зайняти ще кілька хвилин. Якщо запис не з\'явиться найближчим часом, зателефонуйте нам: ' + PHONE_LINK + '.</p>' +
+            '<div class="actions">' + HOME_BTN + '</div>';
+        }
+      })
+      .catch(function () {
+        renderError('Не вдалось перевірити статус', 'Зателефонуйте нам, щоб підтвердити запис: ' + PHONE_LINK + '.');
+      });
+  }
+  poll();
+})();
+</script>
+</body>
+</html>
