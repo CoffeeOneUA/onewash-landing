@@ -710,7 +710,7 @@
       <div class="price-scroll">
         <table class="price-table">
           <thead>
-            <tr>
+            <tr id="priceTableHead">
               <th>Пакет</th>
               <th>Легковий (міні)</th>
               <th>Легковий (звич.)</th>
@@ -719,38 +719,41 @@
               <th>Бус</th>
             </tr>
           </thead>
-          <tbody>
+          <!-- Rendered live from /api/prices (renderPriceTable in the script below) — the
+               head row above stays as a plain-HTML fallback until JS replaces it too, so the
+               table still reads sensibly with JS disabled or before the fetch resolves. -->
+          <tbody id="priceTableBody">
             <tr>
               <td><span class="svc-name">Експрес</span><span class="svc-desc">Безконтактна мийка, очищення килимків</span></td>
-              <td class="price-cell tabular">400 грн</td>
-              <td class="price-cell tabular">450 грн</td>
-              <td class="price-cell tabular">500 грн</td>
-              <td class="price-cell tabular">500 грн</td>
-              <td class="price-cell tabular">575 грн</td>
+              <td class="price-cell tabular">—</td>
+              <td class="price-cell tabular">—</td>
+              <td class="price-cell tabular">—</td>
+              <td class="price-cell tabular">—</td>
+              <td class="price-cell tabular">—</td>
             </tr>
             <tr>
               <td><span class="svc-name">Стандарт</span><span class="svc-desc">Мийка, килимки, пилосмок, вологе прибирання, скло, чорніння гуми</span></td>
-              <td class="price-cell tabular">650 грн</td>
-              <td class="price-cell tabular">700 грн</td>
-              <td class="price-cell tabular">750 грн</td>
-              <td class="price-cell tabular">750 грн</td>
-              <td class="price-cell tabular">800 грн</td>
+              <td class="price-cell tabular">—</td>
+              <td class="price-cell tabular">—</td>
+              <td class="price-cell tabular">—</td>
+              <td class="price-cell tabular">—</td>
+              <td class="price-cell tabular">—</td>
             </tr>
             <tr>
               <td><span class="svc-name">Преміум</span><span class="svc-desc">Розширена мийка + диски, рідкий віск, поліроль</span></td>
-              <td class="price-cell tabular">800 грн</td>
-              <td class="price-cell tabular">900 грн</td>
-              <td class="price-cell tabular">1000 грн</td>
-              <td class="price-cell tabular">1000 грн</td>
-              <td class="price-cell tabular">1150 грн</td>
+              <td class="price-cell tabular">—</td>
+              <td class="price-cell tabular">—</td>
+              <td class="price-cell tabular">—</td>
+              <td class="price-cell tabular">—</td>
+              <td class="price-cell tabular">—</td>
             </tr>
             <tr>
               <td><span class="svc-name">Хімчистка</span><span class="svc-desc">Комплексна хімчистка салону</span></td>
-              <td class="price-cell tabular">5000 грн</td>
-              <td class="price-cell tabular">6000 грн</td>
-              <td class="price-cell tabular">8000 грн</td>
-              <td class="price-cell tabular">8000 грн</td>
-              <td class="price-cell tabular">10 000 грн</td>
+              <td class="price-cell tabular">—</td>
+              <td class="price-cell tabular">—</td>
+              <td class="price-cell tabular">—</td>
+              <td class="price-cell tabular">—</td>
+              <td class="price-cell tabular">—</td>
             </tr>
           </tbody>
         </table>
@@ -1009,9 +1012,12 @@
     Array.prototype.forEach.call(revealEls, function (el) { el.classList.add('in'); });
   }
 
-  /* ---------- Real data from the One Wash Supabase database ---------- */
-  /* extra_services: is_active = true, fetched from the live booking database */
-  var EXTRAS = [
+  /* ---------- Pricing data ---------- */
+  /* Fallback snapshot only, used if /api/prices can't be reached — the real, live source
+     of truth is fetched below (applyPricingData). Never rely on the numbers in this array
+     for anything shown to a customer; they go stale the moment a price changes in the
+     admin panel and nobody rebuilds/redeploys this site. */
+  var FALLBACK_EXTRAS = [
     { id: '57bee23c-0122-4e7d-bdbd-024af68bf549', name: 'Антидощ (бус)', price: 450, duration: 45 },
     { id: 'cc7e2988-9930-4b81-bb05-2af0739ad30d', name: 'Антидощ (кросовер/мінівен)', price: 400, duration: 45 },
     { id: 'cc9348f3-ef8b-4f1b-a0bb-d4bd04ca6859', name: 'Антидощ (легковий звичайний)', price: 300, duration: 45 },
@@ -1073,31 +1079,90 @@
     return { base: m[1].trim(), raw: raw, tokens: raw.split('/').map(function (s) { return s.trim().toLowerCase(); }) };
   }
 
-  var PARSED_EXTRAS = EXTRAS.map(function (e) {
-    var p = parseExtra(e.name);
-    return { id: e.id, base: p.base, raw: p.raw, tokens: p.tokens, price: e.price, duration: e.duration };
-  });
-
-  /* vehicle_types, straight from the location's real category list */
-  var VEHICLES = [
-    { key: 'mini', id: '2cb0a00e-bf27-459f-975a-5dde092b46c2', label: 'Легковий (міні)', kw: ['легковий міні'] },
-    { key: 'regular', id: 'f577e179-cb4c-4149-bd7c-70c8ffb489dc', label: 'Легковий (звичайний)', kw: ['легковий звичайний'] },
-    { key: 'suv', id: '9169b213-8ccf-4674-99f3-5a70fd0d4b31', label: 'Позашляховик', kw: ['легковий звичайний'], extrasApprox: true },
-    { key: 'crossover', id: 'e6a8b723-8f09-49fe-a655-ff2a7663e0be', label: 'Кросовер / мінівен', kw: ['кросовер', 'мінівен'] },
-    { key: 'bus', id: '784d48f7-e524-44e5-9584-e5d7ca679e5c', label: 'Бус (мікроавтобус)', kw: ['бус'] }
+  /* vehicle_types, straight from the location's real category list (fallback labels/order) */
+  var FALLBACK_VEHICLES = [
+    { key: 'mini', id: '2cb0a00e-bf27-459f-975a-5dde092b46c2', label: 'Легковий (міні)' },
+    { key: 'regular', id: 'f577e179-cb4c-4149-bd7c-70c8ffb489dc', label: 'Легковий (звичайний)' },
+    { key: 'suv', id: '9169b213-8ccf-4674-99f3-5a70fd0d4b31', label: 'Позашляховик' },
+    { key: 'crossover', id: 'e6a8b723-8f09-49fe-a655-ff2a7663e0be', label: 'Кросовер / мінівен' },
+    { key: 'bus', id: '784d48f7-e524-44e5-9584-e5d7ca679e5c', label: 'Бус (мікроавтобус)' }
   ];
 
-  /* wash_types x vehicle_types, exact prices from the wash_prices table (public.wash_prices) */
-  var PACKAGES = [
-    { key: 'express', id: 'b4f1031f-a6da-4e1a-bb3d-a35c6b8042e7', name: 'Експрес', desc: 'Безконтактна мийка, очищення килимків', duration: 60,
+  /* Matching heuristic for extras' "(категорія)" suffix + vehicle_types name is unused fallback text —
+     tied to the extra_services naming convention, not to price data, so this stays fixed either way. */
+  var VEHICLE_META = {
+    mini: { kw: ['легковий міні'] },
+    regular: { kw: ['легковий звичайний'] },
+    suv: { kw: ['легковий звичайний'], extrasApprox: true },
+    crossover: { kw: ['кросовер', 'мінівен'] },
+    bus: { kw: ['бус'] }
+  };
+
+  /* wash_types x vehicle_types — fallback snapshot of public.wash_prices */
+  var FALLBACK_PACKAGES = [
+    { key: 'express', id: 'b4f1031f-a6da-4e1a-bb3d-a35c6b8042e7', name: 'Експрес', duration: 60,
       price: { mini: 400, regular: 450, suv: 500, crossover: 500, bus: 575 } },
-    { key: 'standard', id: '010fb41a-24a3-4663-95c1-2dc8f5d5a0a3', name: 'Стандарт', desc: 'Мийка, килимки, пилосмок, вологе прибирання, скло, чорніння гуми', duration: 90,
+    { key: 'standard', id: '010fb41a-24a3-4663-95c1-2dc8f5d5a0a3', name: 'Стандарт', duration: 90,
       price: { mini: 650, regular: 700, suv: 750, crossover: 750, bus: 800 } },
-    { key: 'premium', id: '432f4e84-0bdf-4fca-a8a9-4849badd4ecd', name: 'Преміум', desc: 'Розширена мийка + диски, рідкий віск, поліроль', duration: 120,
+    { key: 'premium', id: '432f4e84-0bdf-4fca-a8a9-4849badd4ecd', name: 'Преміум', duration: 120,
       price: { mini: 800, regular: 900, suv: 1000, crossover: 1000, bus: 1150 } },
-    { key: 'chem', id: '0985a104-3000-4c84-a1e6-0e52e5c5dd55', name: 'Хімчистка', desc: 'Комплексна хімчистка салону', duration: 540,
+    { key: 'chem', id: '0985a104-3000-4c84-a1e6-0e52e5c5dd55', name: 'Хімчистка', duration: 540,
       price: { mini: 5000, regular: 6000, suv: 8000, crossover: 8000, bus: 10000 } }
   ];
+
+  /* Marketing copy per wash type — not price data, doesn't come from the API. */
+  var PACKAGE_DESC = {
+    express: 'Безконтактна мийка, очищення килимків',
+    standard: 'Мийка, килимки, пилосмок, вологе прибирання, скло, чорніння гуми',
+    premium: 'Розширена мийка + диски, рідкий віск, поліроль',
+    chem: 'Комплексна хімчистка салону'
+  };
+
+  /* Populated live from /api/prices (or FALLBACK_* above if that request fails) — see
+     loadPricingAndInit() near the bottom of this script. Nothing renders off the hardcoded
+     snapshots directly; they only feed applyPricingData() as a last resort. */
+  var EXTRAS = [], VEHICLES = [], PACKAGES = [], PARSED_EXTRAS = [];
+
+  function applyPricingData(data) {
+    VEHICLES = (data.vehicles || []).map(function (v) {
+      var meta = VEHICLE_META[v.key] || {};
+      return { key: v.key, id: v.id, label: v.name, kw: meta.kw || [], extrasApprox: !!meta.extrasApprox };
+    });
+    PACKAGES = (data.washTypes || []).map(function (w) {
+      return { key: w.key, id: w.id, name: w.name, desc: PACKAGE_DESC[w.key] || '', duration: w.duration, price: (data.prices && data.prices[w.key]) || {} };
+    });
+    EXTRAS = data.extras || [];
+    PARSED_EXTRAS = EXTRAS.map(function (e) {
+      var p = parseExtra(e.name);
+      return { id: e.id, base: p.base, raw: p.raw, tokens: p.tokens, price: e.price, duration: e.duration };
+    });
+  }
+
+  function fallbackPricingData() {
+    var prices = {};
+    FALLBACK_PACKAGES.forEach(function (p) { prices[p.key] = p.price; });
+    return {
+      vehicles: FALLBACK_VEHICLES.map(function (v) { return { key: v.key, id: v.id, name: v.label }; }),
+      washTypes: FALLBACK_PACKAGES.map(function (p) { return { key: p.key, id: p.id, name: p.name, duration: p.duration }; }),
+      prices: prices,
+      extras: FALLBACK_EXTRAS
+    };
+  }
+
+  /* ---------- Render: price table (#prices section) ---------- */
+  function renderPriceTable() {
+    var head = document.getElementById('priceTableHead');
+    var body = document.getElementById('priceTableBody');
+    if (!head || !body) return;
+    head.innerHTML = '<th>Пакет</th>' + VEHICLES.map(function (v) { return '<th>' + v.label + '</th>'; }).join('');
+    body.innerHTML = PACKAGES.map(function (p) {
+      var cells = VEHICLES.map(function (v) {
+        var pr = p.price[v.key];
+        return '<td class="price-cell tabular">' + (pr != null ? Number(pr).toLocaleString('uk-UA') + ' грн' : '—') + '</td>';
+      }).join('');
+      return '<tr><td><span class="svc-name">' + p.name + '</span><span class="svc-desc">' + p.desc + '</span></td>' + cells + '</tr>';
+    }).join('');
+  }
 
   /* ---------- Render: full extras section from real DB data ---------- */
   function buildGroups(list) {
@@ -1125,8 +1190,9 @@
     return html;
   }
 
-  var extrasGrid = document.getElementById('extrasGrid');
-  if (extrasGrid) {
+  function renderExtrasGridSection() {
+    var extrasGrid = document.getElementById('extrasGrid');
+    if (!extrasGrid) return;
     var groups = buildGroups(PARSED_EXTRAS);
     var half = Math.ceil(groups.length / 2);
     var col1 = groups.slice(0, half).map(renderGroup).join('');
@@ -1162,6 +1228,10 @@
   var payDepositBtn = document.getElementById('payDeposit');
   var sendBtn = document.getElementById('sendBtn');
   var bFormError = document.getElementById('bFormError');
+
+  /* Assigned below once the booking calculator's own render functions exist — called only
+     after real pricing data is loaded, see loadPricingAndInit() near the end of this script. */
+  var initBookingCalc = function () {};
 
   if (bVehicleEl && bPackageEl && bExtrasEl) {
     var state = { vehicleKey: 'regular', packageKey: 'express', extras: {}, pay: 'full', date: '', time: '' };
@@ -1222,7 +1292,7 @@
       bPackageEl.innerHTML = PACKAGES.map(function (p) {
         var pr = p.price[vh.key];
         return '<button type="button" class="b-opt' + (p.key === state.packageKey ? ' sel' : '') + '" data-pkg="' + p.key + '">' +
-          p.name + '<small>' + pr + ' грн</small></button>';
+          p.name + '<small>' + (pr != null ? pr + ' грн' : 'ціна уточнюється') + '</small></button>';
       }).join('');
       Array.prototype.forEach.call(bPackageEl.querySelectorAll('.b-opt'), function (btn) {
         btn.addEventListener('click', function () {
@@ -1268,7 +1338,7 @@
     function updateSummary() {
       var vh = currentVehicle();
       var pkg = currentPackage();
-      var pr = pkg.price[vh.key];
+      var pr = Number(pkg.price[vh.key]) || 0;
       var extras = selectedExtrasList();
       var extrasTotal = extras.reduce(function (s, e) { return s + e.price; }, 0);
       var total = pr + extrasTotal;
@@ -1432,14 +1502,36 @@
         });
     });
 
-    renderVehicles();
-    renderPackages();
-    renderExtras();
-    updateSummary();
-    loadSlots();
+    initBookingCalc = function () {
+      renderVehicles();
+      renderPackages();
+      renderExtras();
+      updateSummary();
+      loadSlots();
+    };
     // Returning from WayForPay after a payment is handled by dedicated pages
     // (success.html / payment-failed.html), not here — see api/return.js.
   }
+
+  /* ---------- Load live pricing, then render everything that depends on it ---------- */
+  function loadPricingAndInit() {
+    fetch('/api/prices')
+      .then(function (r) { if (!r.ok) throw new Error('bad status ' + r.status); return r.json(); })
+      .then(function (data) {
+        if (!data || !data.prices || !Object.keys(data.prices).length) throw new Error('empty pricing response');
+        applyPricingData(data);
+      })
+      .catch(function (err) {
+        console.error('Live pricing unavailable, showing last-known snapshot instead:', err);
+        applyPricingData(fallbackPricingData());
+      })
+      .then(function () {
+        renderPriceTable();
+        renderExtrasGridSection();
+        initBookingCalc();
+      });
+  }
+  loadPricingAndInit();
 })();
 </script>
 </body>
